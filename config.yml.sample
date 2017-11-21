@@ -1,0 +1,20 @@
+privateKeyFile: test.pem
+provider:
+  role: arn:aws:iam::000000000000:role/AWSLambdaInVPCRole
+  vpc:
+    securityGroupIds:
+      - sg-00000000
+    subnetIds:
+      - subnet-00000000
+      - subnet-00000000
+
+functions:
+  sourceIp : 'xxx.xxx.xxx.xxx,
+              yyy.yyy.yyy.yyy'
+  ldapServer: "ldap.hogehoge.server"
+  ldapPort: "389"
+  dnsServer: "zzz.zzz.zzz.zzz"
+  searchBase: ""
+  searchFilter: "mail={{username}}"
+  groupSearchBase: ""
+  groupSearchFilter: "(member={{dn}})"
