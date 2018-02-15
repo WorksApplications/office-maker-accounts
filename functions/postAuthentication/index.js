@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const ldap = require('ldapauth-fork');
 const dns = require('dns');
+const bunyan = require('bunyan');
 
 dns.setServers([process.env.dnsServer]);
 
@@ -11,6 +12,7 @@ function getLdapServer(hostname) {
   return new Promise((resolve, reject) => {
     dns.resolve4(hostname, (err, address) => {
         if (err) {
+            console.log("hostname wasn't resolved");
             reject(err);
         }
         resolve(address);
@@ -21,6 +23,7 @@ function getLdapServer(hostname) {
 function login (userId, password) {
   return new Promise((resolve, reject) => {
     getLdapServer(process.env.ldapServer).then((address) => {
+      var logger = bunyan.createLogger({name: 'ldap', stream: process.stdout, level: process.env.logLevel});
       var auth = new ldap({
         url: 'ldap://' + address + ':' + process.env.ldapPort,
         searchBase: process.env.searchBase,
@@ -29,13 +32,14 @@ function login (userId, password) {
         groupSearchFilter: process.env.groupSearchFilter,
         groupSearchScope: 'base',
         groupSearchAttributes: ['dn', 'cn'],
-        reconnect: true
+        reconnect: true,
+        log: logger
       });
 
       auth.authenticate(userId, password, (err, user) => {
         auth.close((err) => {
           if (err) {
-            console.log("auth err:" + err);
+            console.log("auth close err: " + err);
           };
         });
         if (err) {
@@ -99,6 +103,7 @@ module.exports.handler = (event, context, callback) => {
       var token = createToken(userInfo.userId, "ADMIN", domain);
       callback(null, createResponse(200, token));
     }, (err) => {
+      console.log("auth error: " + err);
       callback(null, createResponse(401, null));
     });
 };

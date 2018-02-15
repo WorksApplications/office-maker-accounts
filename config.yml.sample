@@ -18,3 +18,4 @@ functions:
   searchFilter: "mail={{username}}"
   groupSearchBase: ""
   groupSearchFilter: "(member={{dn}})"
+  logLevel: '"info"'

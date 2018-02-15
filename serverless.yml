@@ -64,6 +64,7 @@ functions:
       searchFilter: ${self:custom.external_file.environment.functions.searchFilter}
       groupSearchBase: ${self:custom.external_file.environment.functions.groupSearchBase}
       groupSearchFilter: ${self:custom.external_file.environment.functions.groupSearchFilter}
+      logLeve: ${self:custom.external_file.environment.functions.logLevel}
     # The `events` block defines how to trigger the handler.helloWorld code
     warmup: prod
     events:
