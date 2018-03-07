@@ -11,7 +11,7 @@ provider:
 functions:
   sourceIp : 'xxx.xxx.xxx.xxx,
               yyy.yyy.yyy.yyy'
-  ldapServer: "ldap.hogehoge.server"
+  ldapServer: "ldap.office-maker-account.server"
   ldapPort: "389"
   dnsServer: "zzz.zzz.zzz.zzz"
   searchBase: ""
