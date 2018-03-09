@@ -15,7 +15,8 @@ provider:
   region: ap-northeast-1
   memorySize: 128
   timeout: 15
-  role: ${self:custom.external_file.environment.provider.role}
+  stackTags:
+    Name: ${self:service}-${self:provider.stage}
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -27,10 +28,16 @@ provider:
           - Ref: AWS::Region
           - Ref: AWS::AccountId
           - function:${self:service}-${opt:stage, self:provider.stage}-*
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource:
+        - "arn:aws:s3:::office-maker-account-storage-${self:provider.stage}"
 
 custom:
   external_file:
     environment: ${file(./config.yml)}
+  storageBucketName: office-maker-account-storage-${self:provider.stage}
 
 package:
   individually: true
@@ -66,7 +73,7 @@ functions:
       groupSearchFilter: ${self:custom.external_file.environment.functions.groupSearchFilter}
       logLeve: ${self:custom.external_file.environment.functions.logLevel}
     # The `events` block defines how to trigger the handler.helloWorld code
-    warmup: prod
+    warmup: true
     events:
       - http:
           path: authentication
@@ -94,13 +101,46 @@ functions:
       securityGroupIds: ${self:custom.external_file.environment.provider.vpc.securityGroupIds}
       subnetIds: ${self:custom.external_file.environment.provider.vpc.subnetIds}
 
+  batchCreateServiceToken:
+    handler: functions/batchCreateServiceToken/index.handler
+    name: ${self:service}-${self:provider.stage}-batchCreateServiceToken
+    package:
+      include:
+        - ${self:custom.external_file.environment.privateKeyFile}
+        - functions/batchCreateServiceToken/**
+    environment:
+      privatekey: ${self:custom.external_file.environment.privateKeyFile}
+      storageBucketName: ${self:custom.storageBucketName}
+      lambdaRole:
+        Fn::GetAtt: [ IamRoleLambdaExecution, Arn ]
+      arnWhichAllowedToAccessS3: ${self:custom.external_file.environment.arnWhichAllowedToAccessS3._${self:provider.stage}}
+    events:
+      - schedule:
+          name: ${self:service}-${self:provider.stage}-batchCreateServiceToken-schedule
+          rate: cron(*/30 * ? * * *)
+          enabled: true
+          input:
+            key: value
+
+
 resources:
   Resources:
     ApiGatewayRestApi:
         Type: AWS::ApiGateway::RestApi
         Properties:
           Name: ${self:service}-${self:provider.stage}
-
+    # S3
+    StorageBucket:
+      Type: "AWS::S3::Bucket"
+      Properties:
+        BucketName: ${self:custom.storageBucketName}
+        CorsConfiguration:
+          CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET]
+            AllowedOrigins: ["*"]
+            Id: ${self:service}-storage-cors
+            MaxAge: '1'
 
 plugins:
   - serverless-plugin-warmup
