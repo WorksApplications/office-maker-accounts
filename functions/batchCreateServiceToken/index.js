@@ -5,6 +5,7 @@ const fs = require('fs');
 const storageBucketName = process.env.storageBucketName;
 const lambdaRole = process.env.lambdaRole;
 const arnList = process.env.arnWhichAllowedToAccessS3.split(',');
+const sourceIp  = process.env.sourceIp.split(',');
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({
   apiVersion: '2006-03-01'
@@ -14,16 +15,20 @@ const s3 = new AWS.S3({
 module.exports.handler = (event, context, callback) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
   generateBucketPolicy(arnList, lambdaRole).then(() => {
-    arnList.forEach((arn) => {
-      console.log('arn: ', arn);
-      var key = arn.split(':')[5];
-      createToken(key, 'ADMIN', 'worksap.co.jp').then((token) => {
-        putTokenToS3(key + '/token', token, 'text/plan').then(() => {
-          callback(null, createResponse(200));
+    createToken('office-maker@worksap.co.jp', 'GUEST', 'worksap.co.jp').then((token) => {
+      putTokenToS3('guest/token', token, 'text/plan').then(() => {
+        arnList.forEach((arn) => {
+          console.log('arn: ', arn);
+          var key = arn.split(':')[5];
+          createToken(key, 'ADMIN', 'worksap.co.jp').then((token) => {
+            putTokenToS3(key + '/token', token, 'text/plan').then(() => {
+              callback(null, createResponse(200));
+            });
+          }).catch((err) => {
+            console.log('err: ', err);
+            callback(null, createResponse(500));
+          });
         });
-      }).catch((err) => {
-        console.log('err: ', err);
-        callback(null, createResponse(500));
       });
     });
   });
@@ -96,6 +101,20 @@ function generateBucketPolicy(arnList, lambdaRole){
           'Condition': {
             'Bool': {
               'aws:SecureTransport': 'true'
+            }
+          }
+        },
+        {
+          'Effect': 'Allow',
+          'Principal': '*',
+          'Action': 's3:GetObject',
+          'Resource': 'arn:aws:s3:::' + storageBucketName + '/guest/*',
+          'Condition': {
+            'Bool': {
+              'aws:SecureTransport': 'true'
+            },
+            'IpAddress': {
+              'aws:SourceIp': sourceIp
             }
           }
         }

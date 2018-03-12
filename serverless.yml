@@ -114,6 +114,8 @@ functions:
       lambdaRole:
         Fn::GetAtt: [ IamRoleLambdaExecution, Arn ]
       arnWhichAllowedToAccessS3: ${self:custom.external_file.environment.arnWhichAllowedToAccessS3._${self:provider.stage}}
+      sourceIp: ${self:custom.external_file.environment.functions.sourceIp}
+
     events:
       - schedule:
           name: ${self:service}-${self:provider.stage}-batchCreateServiceToken-schedule
