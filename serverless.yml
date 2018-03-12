@@ -38,6 +38,9 @@ custom:
   external_file:
     environment: ${file(./config.yml)}
   storageBucketName: office-maker-account-storage-${self:provider.stage}
+  remover:
+    bucket:
+      - ${self:custom.storageBucketName}${self:custom.storageBucketName}
 
 package:
   individually: true
@@ -101,13 +104,13 @@ functions:
       securityGroupIds: ${self:custom.external_file.environment.provider.vpc.securityGroupIds}
       subnetIds: ${self:custom.external_file.environment.provider.vpc.subnetIds}
 
-  batchCreateServiceToken:
-    handler: functions/batchCreateServiceToken/index.handler
-    name: ${self:service}-${self:provider.stage}-batchCreateServiceToken
+  batchCreateToken:
+    handler: functions/batchCreateToken/index.handler
+    name: ${self:service}-${self:provider.stage}-batchCreateToken
     package:
       include:
         - ${self:custom.external_file.environment.privateKeyFile}
-        - functions/batchCreateServiceToken/**
+        - functions/batchCreateToken/**
     environment:
       privatekey: ${self:custom.external_file.environment.privateKeyFile}
       storageBucketName: ${self:custom.storageBucketName}
@@ -118,7 +121,7 @@ functions:
 
     events:
       - schedule:
-          name: ${self:service}-${self:provider.stage}-batchCreateServiceToken-schedule
+          name: ${self:service}-${self:provider.stage}-batchCreateToken-schedule
           rate: cron(*/30 * ? * * *)
           enabled: true
           input:
@@ -146,3 +149,4 @@ resources:
 
 plugins:
   - serverless-plugin-warmup
+  - serverless-s3-remover
