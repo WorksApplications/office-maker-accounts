@@ -128,7 +128,7 @@ function generateBucketPolicy(arnList, lambdaRole){
             'AWS': arn
           },
           'Action': 's3:GetObject',
-          'Resource': 'arn:aws:s3:::' + storageBucketName + '/' + arn.split(':')[5],
+          'Resource': 'arn:aws:s3:::' + storageBucketName + '/' + arn.split(':')[5] + '/*',
           'Condition': {
             'Bool': {
               'aws:SecureTransport': 'true'
