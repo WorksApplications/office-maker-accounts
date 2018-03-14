@@ -16,12 +16,12 @@ module.exports.handler = (event, context, callback) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
   generateBucketPolicy(arnList, lambdaRole).then(() => {
     createToken('office-maker@worksap.co.jp', 'GUEST', 'worksap.co.jp').then((token) => {
-      putTokenToS3('guest/token', token, 'text/plan').then(() => {
+      putTokenToS3('guest/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
         arnList.forEach((arn) => {
           console.log('arn: ', arn);
           var key = arn.split(':')[5];
           createToken(key, 'ADMIN', 'worksap.co.jp').then((token) => {
-            putTokenToS3(key + '/token', token, 'text/plan').then(() => {
+            putTokenToS3(key + '/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
               callback(null, createResponse(200));
             });
           }).catch((err) => {
