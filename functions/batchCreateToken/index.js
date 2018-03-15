@@ -59,7 +59,7 @@ function putTokenToS3(key, body, type){
 
 function createToken(userId, role, tenantDomain) {
   return new Promise((resolve, reject) => {
-    var expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24);
+    var expire = Math.floor(Date.now() / 1000) + (60 * 60);
     var cert = fs.readFileSync(process.env.privatekey);
     resolve(jwt.sign({exp: expire, userId: userId, role: role, tenantDomain: tenantDomain}, cert, { algorithm: 'RS512'}));
   });
