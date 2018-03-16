@@ -55,7 +55,7 @@ function login (userId, password) {
 };
 
 function createToken(userId, role, tenantDomain) {
-  var expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 2);
+  var expire = Math.floor(Date.now() / 1000) + (60 * 60);
   var cert = fs.readFileSync(process.env.privatekey);
   return jwt.sign({exp: expire, userId: userId, role: role, tenantDomain: tenantDomain}, cert, { algorithm: 'RS512'})
 };
@@ -83,7 +83,7 @@ function createResponse(statusCode, token) {
 
 module.exports.handler = (event, context, callback) => {
   //context.callbackWaitsForEmptyEventLoop = false;
-  //console.log('Received event:', JSON.stringify(event, null, 2));
+  // console.log('Received event:', JSON.stringify(event, null, 2));
   var userInfo;
   try {
     userInfo = JSON.parse(event.body);
@@ -101,11 +101,10 @@ module.exports.handler = (event, context, callback) => {
     .then((user) => {
       var domain = userInfo.userId.substr(userInfo.userId.indexOf("@")+1);
       var token = createToken(userInfo.userId, "ADMIN", domain);
+      // console.log('token:', token);
       callback(null, createResponse(200, token));
     }, (err) => {
       console.log("auth error: " + err);
       callback(null, createResponse(401, null));
     });
 };
-
-
