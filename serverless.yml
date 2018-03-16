@@ -40,7 +40,7 @@ custom:
   storageBucketName: office-maker-account-storage-${self:provider.stage}
   remover:
     bucket:
-      - ${self:custom.storageBucketName}${self:custom.storageBucketName}
+      - ${self:custom.storageBucketName}
 
 package:
   individually: true
@@ -76,7 +76,7 @@ functions:
       groupSearchFilter: ${self:custom.external_file.environment.functions.groupSearchFilter}
       logLeve: ${self:custom.external_file.environment.functions.logLevel}
     # The `events` block defines how to trigger the handler.helloWorld code
-    warmup: true
+    warmup: prod
     events:
       - http:
           path: authentication
@@ -118,6 +118,8 @@ functions:
         Fn::GetAtt: [ IamRoleLambdaExecution, Arn ]
       arnWhichAllowedToAccessS3: ${self:custom.external_file.environment.arnWhichAllowedToAccessS3._${self:provider.stage}}
       sourceIp: ${self:custom.external_file.environment.functions.sourceIp}
+      guestId: ${self:custom.external_file.environment.functions.guestId}
+      guestTenantDomain: ${self:custom.external_file.environment.functions.guestTenantDomain}
 
     events:
       - schedule:

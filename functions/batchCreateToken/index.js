@@ -6,6 +6,8 @@ const storageBucketName = process.env.storageBucketName;
 const lambdaRole = process.env.lambdaRole;
 const arnList = process.env.arnWhichAllowedToAccessS3.split(',');
 const sourceIp  = process.env.sourceIp.split(',');
+const guestId  = process.env.guestId;
+const guestTenantDomain  = process.env.guestTenantDomain;
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({
   apiVersion: '2006-03-01'
@@ -15,12 +17,12 @@ const s3 = new AWS.S3({
 module.exports.handler = (event, context, callback) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
   generateBucketPolicy(arnList, lambdaRole).then(() => {
-    createToken('office-maker@worksap.co.jp', 'GUEST', 'worksap.co.jp').then((token) => {
+    createToken(guestId, 'GUEST', guestTenantDomain).then((token) => {
       putTokenToS3('guest/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
         arnList.forEach((arn) => {
           console.log('arn: ', arn);
           var key = arn.split(':')[5];
-          createToken(key, 'ADMIN', 'worksap.co.jp').then((token) => {
+          createToken(key, 'ADMIN', '').then((token) => {
             putTokenToS3(key + '/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
               callback(null, createResponse(200));
             });
