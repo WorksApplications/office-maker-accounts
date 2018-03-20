@@ -117,9 +117,6 @@ functions:
       lambdaRole:
         Fn::GetAtt: [ IamRoleLambdaExecution, Arn ]
       arnWhichAllowedToAccessS3: ${self:custom.external_file.environment.arnWhichAllowedToAccessS3._${self:provider.stage}}
-      sourceIp: ${self:custom.external_file.environment.functions.sourceIp}
-      guestId: ${self:custom.external_file.environment.functions.guestId}
-      guestTenantDomain: ${self:custom.external_file.environment.functions.guestTenantDomain}
 
     events:
       - schedule:
