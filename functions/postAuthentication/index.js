@@ -55,7 +55,7 @@ function login (userId, password) {
 };
 
 function createToken(userId, role, tenantDomain) {
-  var expire = Math.floor(Date.now() / 1000) + (60 * 60);
+  var expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 2);
   var cert = fs.readFileSync(process.env.privatekey);
   return jwt.sign({exp: expire, userId: userId, role: role, tenantDomain: tenantDomain}, cert, { algorithm: 'RS512'})
 };
