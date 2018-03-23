@@ -83,7 +83,7 @@ function createResponse(statusCode, token) {
 
 module.exports.handler = (event, context, callback) => {
   //context.callbackWaitsForEmptyEventLoop = false;
-  //console.log('Received event:', JSON.stringify(event, null, 2));
+  // console.log('Received event:', JSON.stringify(event, null, 2));
   var userInfo;
   try {
     userInfo = JSON.parse(event.body);
@@ -101,11 +101,10 @@ module.exports.handler = (event, context, callback) => {
     .then((user) => {
       var domain = userInfo.userId.substr(userInfo.userId.indexOf("@")+1);
       var token = createToken(userInfo.userId, "ADMIN", domain);
+      // console.log('token:', token);
       callback(null, createResponse(200, token));
     }, (err) => {
       console.log("auth error: " + err);
       callback(null, createResponse(401, null));
     });
 };
-
-
