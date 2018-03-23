@@ -30,7 +30,8 @@ provider:
           - function:${self:service}-${opt:stage, self:provider.stage}-*
     - Effect: "Allow"
       Action:
-        - "s3:*"
+        - "s3:PutObject"
+        - "s3:PutBucketPolicy"
       Resource:
         - "arn:aws:s3:::office-maker-account-storage-${self:provider.stage}"
 

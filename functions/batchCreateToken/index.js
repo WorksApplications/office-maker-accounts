@@ -21,11 +21,11 @@ module.exports.handler = (event, context, callback) => {
         putTokenToS3(key + '/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
           callback(null, createResponse(200));
         });
-      }).catch((err) => {
-        console.log('err: ', err);
-        callback(null, createResponse(500));
       });
     });
+  }).catch((err) => {
+    console.log('err: ', err);
+    callback(null, createResponse(500));
   });
 };
 
