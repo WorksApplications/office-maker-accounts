@@ -1,6 +1,5 @@
 privateKeyFile: test.pem
 provider:
-  role: arn:aws:iam::000000000000:role/AWSLambdaInVPCRole
   vpc:
     securityGroupIds:
       - sg-00000000
@@ -19,3 +18,6 @@ functions:
   groupSearchBase: ""
   groupSearchFilter: "(member={{dn}})"
   logLevel: '"info"'
+arnWhichAllowedToAccessS3:
+  _prod:
+  _stg:
