@@ -16,15 +16,10 @@ describe('Lambda Authorizer', () => {
         },
         methodArn: '/GET/xxxxx' ,
       };
-      let callbackResult;
-      const callback = (error, result) => {
-        callbackResult = { error, result };
-      }
 
-      authorizer.handler(event, {}, callback);
-      expect(callbackResult).toMatchObject({
-        error: null,
-        result: {
+      authorizer.handler(event, {}, (error, result) => {
+        expect(error).toBeNull();
+        expect(result).toMatchObject({
           principalId: 'user',
           policyDocument: {
             Version: '2012-10-17',
@@ -34,7 +29,7 @@ describe('Lambda Authorizer', () => {
               Resource: event.methodArn,
             }],
           },
-        }
+        });
       });
     })
 
@@ -47,14 +42,10 @@ describe('Lambda Authorizer', () => {
         },
         methodArn: '/POST/xxxxx',
       };
-      let callbackResult;
-      const callback = (error, result) => {
-        callbackResult = { error, result };
-      }
-      authorizer.handler(event, {}, callback);
-      expect(callbackResult).toMatchObject({
-        error: null,
-        result: {
+
+      authorizer.handler(event, {}, (error, result) => {
+        expect(error).toBeNull();
+        expect(result).toMatchObject({
           principalId: 'user',
           policyDocument: {
             Version: '2012-10-17',
@@ -64,8 +55,10 @@ describe('Lambda Authorizer', () => {
               Resource: event.methodArn,
             }],
           },
-        }
+        });
       });
+
+
     })
 
     it('should output Deny Policy', () => {
@@ -77,14 +70,10 @@ describe('Lambda Authorizer', () => {
         },
         methodArn: '/POST/xxxxx',
       };
-      let callbackResult;
-      const callback = (error, result) => {
-        callbackResult = { error, result };
-      }
-      authorizer.handler(event, {}, callback);
-      expect(callbackResult).toMatchObject({
-        error: null,
-        result: {
+
+      authorizer.handler(event, {}, (error, result) => {
+        expect(error).toBeNull();
+        expect(result).toMatchObject({
           principalId: 'user',
           policyDocument: {
             Version: '2012-10-17',
@@ -94,8 +83,9 @@ describe('Lambda Authorizer', () => {
               Resource: event.methodArn,
             }],
           },
-        }
+        });
       });
+
     })
 
   })
