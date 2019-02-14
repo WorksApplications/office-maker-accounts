@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "postinstall": "(cd functions/postAuthentication/ && npm install);(cd functions/batchCreateToken/ && npm install);"
+    "postinstall": "(cd functions/postAuthentication/ && npm install);(cd functions/batchCreateToken/ && npm install);",
+    "test": "npx jest --verbose --coverage" 
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "jest": "^24.1.0",
     "serverless-plugin-warmup": "^3.3.0-rc.1",
     "serverless-s3-remover": "^0.4.1"
   }

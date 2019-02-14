@@ -10,3 +10,5 @@ privkey.pem
 
 #linter
 .eslintrc.json
+
+coverage
