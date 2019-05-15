@@ -1,0 +1,11 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "functions/batchCreateToken/package.json",
+        "functions/postAuthentication/package.json",
+        "package.json"
+      ]
+    }
+  }
+}
