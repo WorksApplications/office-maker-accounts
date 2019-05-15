@@ -10,6 +10,6 @@
   "license": "ISC",
   "devDependencies": {
     "serverless-plugin-warmup": "^3.3.0-rc.1",
-    "serverless-s3-remover": "^0.4.1"
+    "serverless-s3-remover": "^0.6.0"
   }
 }
