@@ -1,4 +1,7 @@
 # office-maker-accounts
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/WorksApplications/office-maker-accounts.svg)](https://greenkeeper.io/)
+
 ## Getting Started
 [Node.js](https://nodejs.org/) (>= 6.10)
 ## Installing
