@@ -16,7 +16,7 @@ module.exports.handler = (event, context, callback) => {
   generateBucketPolicy(arnList, lambdaRole).then(() => {
     arnList.forEach((arn) => {
       console.log('arn: ', arn);
-      var key = arn.split(':')[5];
+      let key = arn.split(':')[5];
       createToken(key, 'ADMIN', '').then((token) => {
         putTokenToS3(key + '/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
           callback(null, createResponse(200));
@@ -31,7 +31,7 @@ module.exports.handler = (event, context, callback) => {
 
 function putTokenToS3(key, body, type){
   return new Promise((resolve, reject) => {
-    var params = {
+    let params = {
       Body: body,
       ContentType: type,
       Bucket: storageBucketName,
@@ -54,24 +54,24 @@ function putTokenToS3(key, body, type){
 
 function createToken(userId, role, tenantDomain) {
   return new Promise((resolve, reject) => {
-    var expire = Math.floor(Date.now() / 1000) + (60 * 60);
-    var cert = fs.readFileSync(process.env.privatekey);
+    let expire = Math.floor(Date.now() / 1000) + (60 * 60);
+    let cert = fs.readFileSync(process.env.privatekey);
     resolve(jwt.sign({exp: expire, userId: userId, role: role, tenantDomain: tenantDomain}, cert, { algorithm: 'RS512'}));
   });
 }
 
 function createResponse(statusCode) {
-  var body = '';
-  if (statusCode == 200) {
+  let body = '';
+  if (statusCode === 200) {
     body = { message: 'OK' };
-  } else if(statusCode == 400) {
+  } else if (statusCode === 400) {
     body = { message: 'bad request' };
-  } else if(statusCode == 401) {
+  } else if (statusCode === 401) {
     body = { message: 'unauthorized' };
   } else {
     body = { message: 'unexpected error' };
   }
-  var response = {
+  let response = {
     statusCode: statusCode,
     headers: {
       'Access-Control-Allow-Origin': '*'
@@ -83,7 +83,7 @@ function createResponse(statusCode) {
 
 function generateBucketPolicy(arnList, lambdaRole){
   return new Promise((resolve, reject) => {
-    var policy = {
+    let policy = {
       'Version': '2008-10-17',
       'Statement': [
         {
@@ -117,7 +117,7 @@ function generateBucketPolicy(arnList, lambdaRole){
           }
         });
       });
-      var params = {
+    let params = {
         Bucket: storageBucketName,
         Policy: JSON.stringify(policy)
       };

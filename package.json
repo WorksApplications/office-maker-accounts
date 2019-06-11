@@ -5,13 +5,17 @@
   "main": "index.js",
   "scripts": {
     "postinstall": "(cd functions/postAuthentication/ && npm install);(cd functions/batchCreateToken/ && npm install);",
-    "test": "npx jest --verbose --coverage" 
+    "test": "mocha"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^24.1.0",
+    "chai": "^4.2.0",
+    "lambda-tester": "^3.5.0",
+    "mocha": "^6.1.4",
+    "proxyquire": "^2.1.0",
     "serverless-plugin-warmup": "^3.3.0-rc.1",
     "serverless-s3-remover": "^0.4.1"
-  }
+  },
+  "dependencies": {}
 }

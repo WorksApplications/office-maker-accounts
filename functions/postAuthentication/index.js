@@ -23,8 +23,12 @@ function getLdapServer(hostname) {
 function login (userId, password) {
   return new Promise((resolve, reject) => {
     getLdapServer(process.env.ldapServer).then((address) => {
-      var logger = bunyan.createLogger({name: 'ldap', stream: process.stdout, level: process.env.logLevel});
-      var auth = new ldap({
+      let logger = bunyan.createLogger({
+        name: 'ldap',
+        stream: process.stdout,
+        level: process.env.logLevel,
+      });
+      let auth = new ldap({
         url: 'ldap://' + address + ':' + process.env.ldapPort,
         searchBase: process.env.searchBase,
         searchFilter: process.env.searchFilter,
@@ -44,7 +48,7 @@ function login (userId, password) {
         });
         if (err) {
           reject(err);
-        } else if (user._groups.length == 0) {
+        } else if (user._groups.length === 0) {
           reject("No group user");
         } else {
           resolve(user);
@@ -55,23 +59,23 @@ function login (userId, password) {
 };
 
 function createToken(userId, role, tenantDomain) {
-  var expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 2);
-  var cert = fs.readFileSync(process.env.privatekey);
+  let expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 2);
+  let cert = fs.readFileSync(process.env.privatekey);
   return jwt.sign({exp: expire, userId: userId, role: role, tenantDomain: tenantDomain}, cert, { algorithm: 'RS512'})
 };
 
 function createResponse(statusCode, token) {
-  var body = "";
-  if (statusCode == 200) {
+  let body = "";
+  if (statusCode === 200) {
     body = { accessToken: token };
-  } else if(statusCode == 400) {
+  } else if (statusCode === 400) {
     body = { message: "bad request" };
-  } else if(statusCode == 401) {
+  } else if (statusCode === 401) {
     body = { message: "unauthorized" };
   } else {
     body = { message: "unexpected error" };
   };
-  var response = {
+  let response = {
     statusCode: statusCode,
     headers: {
       'Access-Control-Allow-Origin': '*'
@@ -79,12 +83,12 @@ function createResponse(statusCode, token) {
     body: JSON.stringify(body)
   };
   return response;
-};
+}
 
 module.exports.handler = (event, context, callback) => {
   //context.callbackWaitsForEmptyEventLoop = false;
   // console.log('Received event:', JSON.stringify(event, null, 2));
-  var userInfo;
+  let userInfo;
   try {
     userInfo = JSON.parse(event.body);
   } catch (e) {
@@ -99,8 +103,8 @@ module.exports.handler = (event, context, callback) => {
 
   login(userInfo.userId, userInfo.password)
     .then((user) => {
-      var domain = userInfo.userId.substr(userInfo.userId.indexOf("@")+1);
-      var token = createToken(userInfo.userId, "ADMIN", domain);
+      let domain = userInfo.userId.substr(userInfo.userId.indexOf("@") + 1);
+      let token = createToken(userInfo.userId, "ADMIN", domain);
       // console.log('token:', token);
       callback(null, createResponse(200, token));
     }, (err) => {
