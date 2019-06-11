@@ -16,7 +16,7 @@ module.exports.handler = (event, context, callback) => {
   generateBucketPolicy(arnList, lambdaRole).then(() => {
     arnList.forEach((arn) => {
       console.log('arn: ', arn);
-      let key = arn.split(':')[5];
+      const key = arn.split(':')[5];
       createToken(key, 'ADMIN', '').then((token) => {
         putTokenToS3(key + '/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
           callback(null, createResponse(200));
@@ -31,7 +31,7 @@ module.exports.handler = (event, context, callback) => {
 
 function putTokenToS3(key, body, type){
   return new Promise((resolve, reject) => {
-    let params = {
+    const params = {
       Body: body,
       ContentType: type,
       Bucket: storageBucketName,

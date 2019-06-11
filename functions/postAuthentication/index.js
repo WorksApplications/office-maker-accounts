@@ -59,8 +59,8 @@ function login (userId, password) {
 };
 
 function createToken(userId, role, tenantDomain) {
-  let expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 2);
-  let cert = fs.readFileSync(process.env.privatekey);
+  const expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 2);
+  const cert = fs.readFileSync(process.env.privatekey);
   return jwt.sign({exp: expire, userId: userId, role: role, tenantDomain: tenantDomain}, cert, { algorithm: 'RS512'})
 };
 
@@ -74,15 +74,14 @@ function createResponse(statusCode, token) {
     body = { message: "unauthorized" };
   } else {
     body = { message: "unexpected error" };
-  };
-  let response = {
+  }
+  return {
     statusCode: statusCode,
     headers: {
       'Access-Control-Allow-Origin': '*'
     },
     body: JSON.stringify(body)
   };
-  return response;
 }
 
 module.exports.handler = (event, context, callback) => {
@@ -103,8 +102,8 @@ module.exports.handler = (event, context, callback) => {
 
   login(userInfo.userId, userInfo.password)
     .then((user) => {
-      let domain = userInfo.userId.substr(userInfo.userId.indexOf("@") + 1);
-      let token = createToken(userInfo.userId, "ADMIN", domain);
+      const domain = userInfo.userId.substr(userInfo.userId.indexOf("@") + 1);
+      const token = createToken(userInfo.userId, "ADMIN", domain);
       // console.log('token:', token);
       callback(null, createResponse(200, token));
     }, (err) => {
