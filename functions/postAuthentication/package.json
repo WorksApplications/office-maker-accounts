@@ -12,7 +12,6 @@
     "JSON": "^1.0.0",
     "bunyan": "^1.8.12",
     "dns": "^0.2.2",
-    "fs": "0.0.1-security",
     "jsonwebtoken": "^8.1.0",
     "ldapauth-fork": "^4.0.2"
   },

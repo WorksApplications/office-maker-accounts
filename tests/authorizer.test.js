@@ -1,92 +1,51 @@
+'use strict';
 
-process.env.sourceIp = '192.168.11.21, 200.12.42.32, 1.1.1.1'
+let expect = require('chai').expect;
 
-const path = require('path');
-const authorizer = require(path.resolve(__dirname, '../functions/authorizer/index.js'));
+let LambdaTester = require('lambda-tester');
+let lambda = require('../functions/authorizer/index')
 
+describe('lamabda', function () {
+  before(function () {
+    process.env.sourceIp = '1.2.3.4,192.168.1.2,192.168.2.13';
+  });
+  [
+    '1.2.3.4',
+    '192.168.1.2',
+  ].forEach(function (ip) {
+    it('success match ip: ${ip}', () => {
 
-describe('Lambda Authorizer', () => {
-  describe('handler', () => {
-    it('should output Allow Policy', () => {
-      const event = {
-        requestContext: {
-          identity: {
-            sourceIp: '192.168.11.21',
-          },
-        },
-        methodArn: '/GET/xxxxx' ,
-      };
-
-      authorizer.handler(event, {}, (error, result) => {
-        expect(error).toBeNull();
-        expect(result).toMatchObject({
-          principalId: 'user',
-          policyDocument: {
-            Version: '2012-10-17',
-            Statement: [{
-              Action: 'execute-api:Invoke',
-              Effect: 'Allow',
-              Resource: event.methodArn,
-            }],
-          },
-        });
-      });
+      return LambdaTester(lambda.handler)
+        .event(
+          {
+            requestContext: {
+              identity: {
+                sourceIp: ip,
+              },
+            },
+          })
+        .expectResult((result) => {
+          expect(result.policyDocument.Statement[0].Effect).to.be.equal('Allow');
+        })
     })
-
-    it('should output Deny Policy', () => {
-      const event = {
-        requestContext: {
-          identity: {
-            sourceIp: '2.2.2.2',
-          },
-        },
-        methodArn: '/POST/xxxxx',
-      };
-
-      authorizer.handler(event, {}, (error, result) => {
-        expect(error).toBeNull();
-        expect(result).toMatchObject({
-          principalId: 'user',
-          policyDocument: {
-            Version: '2012-10-17',
-            Statement: [{
-              Action: 'execute-api:Invoke',
-              Effect: 'Deny',
-              Resource: event.methodArn,
-            }],
-          },
-        });
-      });
-
-
+  });
+  [
+    '192.168.1.1',
+    '92.168.1.2',
+  ].forEach(function (ip) {
+    it('fail to match ip: ${ip}', () => {
+      return LambdaTester(lambda.handler)
+        .event(
+          {
+            requestContext: {
+              identity: {
+                sourceIp: ip,
+              },
+            },
+          })
+        .expectResult((result) => {
+          expect(result.policyDocument.Statement[0].Effect).to.be.equal('Deny');
+        })
     })
-
-    it('should output Deny Policy', () => {
-      const event = {
-        requestContext: {
-          identity: {
-            sourceIp: '92.168.11.2',
-          },
-        },
-        methodArn: '/POST/xxxxx',
-      };
-
-      authorizer.handler(event, {}, (error, result) => {
-        expect(error).toBeNull();
-        expect(result).toMatchObject({
-          principalId: 'user',
-          policyDocument: {
-            Version: '2012-10-17',
-            Statement: [{
-              Action: 'execute-api:Invoke',
-              Effect: 'Deny',
-              Resource: event.methodArn,
-            }],
-          },
-        });
-      });
-
-    })
-
   })
 })

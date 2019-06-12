@@ -2,7 +2,8 @@ const sourceIp = process.env.sourceIp;
 
 module.exports.handler = (event, context, callback) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
-  if (sourceIp.includes(event.requestContext.identity.sourceIp)) {
+  const sourceIpList = sourceIp.split(',');
+  if (sourceIpList.includes(event.requestContext.identity.sourceIp)) {
     callback(null, generate_policy('user', 'Allow', event.methodArn));
   } else {
     callback(null, generate_policy('user', 'Deny', event.methodArn));
