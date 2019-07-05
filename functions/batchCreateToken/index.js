@@ -17,7 +17,7 @@ module.exports.handler = (event, context, callback) => {
     arnList.forEach((arn) => {
       console.log('arn: ', arn);
       var key = arn.split(':')[5];
-      createToken(key, 'ADMIN', '').then((token) => {
+      createToken(key, 'SYSTEM', '').then((token) => {
         putTokenToS3(key + '/token', JSON.stringify({'accessToken': token}), 'application/json').then(() => {
           callback(null, createResponse(200));
         });
