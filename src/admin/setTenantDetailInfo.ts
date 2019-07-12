@@ -21,17 +21,13 @@ const BASE_URL = process.env.BASE_URL as string
 export async function handler( event: any ) {
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
   const tenantName = event['pathParameters']['tenant']
-  const bodyStr: string = event['body']
-  const bodyObj: any = {}
-  bodyStr.split('&').forEach(str => {
-    const [key, value] = str.split('=')
-    bodyObj[key] = value
-  })
+  const body = event['body']
+
 
   const defaultRedirectUrl = getTenantBaseUrl(BASE_URL, tenantName)
-  const jwtExpireTime: string = bodyObj['jwtExpireTime'] ? bodyObj['jwtExpireTime'] : '' + defaultJwtExpireLength
-  const stateExpireTime: string = bodyObj['stateExpireTime'] ? bodyObj['stateExpireTime'] : '' + defaultStateExpireLength
-  const redirectUrl: string = bodyObj['redirectUrl'] ? bodyObj['redirectUrl'] : defaultRedirectUrl
+  const jwtExpireTime: string = body['jwtExpireTime'] ? body['jwtExpireTime'] : '' + defaultJwtExpireLength
+  const stateExpireTime: string = body['stateExpireTime'] ? body['stateExpireTime'] : '' + defaultStateExpireLength
+  const redirectUrl: string = body['redirectUrl'] ? body['redirectUrl'] : defaultRedirectUrl
   try {
     await validateTenant(tenantName)
   } catch (e) {

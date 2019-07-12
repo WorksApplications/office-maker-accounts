@@ -59,7 +59,7 @@ functions:
     handler: src/admin/registerTenant.handler
     name: ${self:service}-${self:provider.stage}-createTenant
     role: !GetAtt APICreateTenantLambdaRole.Arn
-    events: # POST tenants/ body: {tenant}
+    events: # POST tenants/tenant=<tenant>
       - http:
           path: admin/tenants
           method: post
@@ -101,7 +101,7 @@ functions:
       #      jwtExpireTime?: string | undefined
       #      stateExpireTime?: string | undefined
       #      redirectUrl?: string | undefined
-      # }   if undefined, will use default value
+      # }   if undefined, will use default value   json
       - http:
           path: admin/tenants/{tenant}/info
           method: post
@@ -125,7 +125,7 @@ functions:
     warmup: prod
     handler: src/admin/SAMLProviderRegister.handler
     name: ${self:service}-${self:provider.stage}-addSAMLProvider
-    events: # POST saml-providers/ body {tenant, metadata | metadataUrl }
+    events: # POST saml-providers/tenant=<tenant> body {metadata | metadataUrl }
       - http:
           path: admin/providers/
           method: post
@@ -138,7 +138,7 @@ functions:
     warmup: prod
     handler: src/admin/SAMLProviderUpdate.handler
     name: ${self:service}-${self:provider.stage}-updateSAMLProvider
-    events: # POST saml-providers/{tenant} body: {metadata | metadataUrl}
+    events: # POST admin/providers/{tenant} body: {metadata | metadataUrl}
       - http:
           path: admin/providers/{tenant}
           method: post
@@ -151,7 +151,7 @@ functions:
     warmup: prod
     handler: src/admin/SAMLProviderDelete.handler
     name: ${self:service}-${self:provider.stage}-deleteSAMLProvider
-    events: # delete saml-providers/{tenant}
+    events: # delete admin/providers/{tenant}
       - http:
           path: admin/providers/{tenant}
           method: delete
@@ -164,7 +164,7 @@ functions:
     warmup: prod
     handler: src/admin/SAMLProviderGet.handler
     name: ${self:service}-${self:provider.stage}-getSAMLProvider
-    events: # get saml-providers/{tenant}
+    events: # get admin/providers/{tenant}
       - http:
           path: admin/providers/{tenant}
           method: get
@@ -177,7 +177,7 @@ functions:
     warmup: prod
     handler: src/user/generateLoginUrl.handler
     name: ${self:service}-${self:provider.stage}-generateLoginUrl
-    events: # get login/url?tenant=tenant
+    events: # get login/url?tenant=<tenant>
       - http:
           path: saml/login/
           method: get

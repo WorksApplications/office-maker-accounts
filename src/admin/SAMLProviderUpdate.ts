@@ -5,8 +5,8 @@ import {validateTenant} from '@/tenantNameRegex'
 export async function handler( event: any ) {
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
   const tenantName: string = event['pathParameters']['tenant']
-  const metadata: string | undefined = event['queryStringParameters']['metadata']
-  const metadataUrl: string | undefined = event['queryStringParameters']['metadataUrl']
+  const metadata: string | undefined = event['body']['metadata']
+  const metadataUrl: string | undefined = event['body']['metadataUrl']
   const TENANT_SAML_NAME_PREFIX = process.env.TENANT_SAML_NAME_PREFIX
   const samlProviderName = TENANT_SAML_NAME_PREFIX + '.' + tenantName
 
