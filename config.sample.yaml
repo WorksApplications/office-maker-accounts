@@ -1,0 +1,9 @@
+COGNITO:
+  ADMIN_USER_POOL_COGNITO_DOMAIN: 'example-admin'
+  USERS_USER_POOL_COGNITO_DOMAIN: 'example-users'
+
+BASE_URL: ''
+
+SSM:
+  PUBLIC_KEY: ${ssm:key_name_to_use~true}
+  PRIVATE_KEY: ${ssm:key_name_to_use~true}
