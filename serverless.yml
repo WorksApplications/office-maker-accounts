@@ -7,146 +7,204 @@
 # The `service` block is the name of the service
 service: Office-Maker-Account
 
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-dynamodb-local
+  - serverless-tag-api-gateway
+  - serverless-tag-cloud-watch-logs
+  - serverless-plugin-warmup
+
 # The `provider` block defines where your service will be deployed
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
   region: ap-northeast-1
   memorySize: 128
   timeout: 15
   stackTags:
     Name: ${self:service}-${self:provider.stage}
-  iamRoleStatements:
-    - Effect: 'Allow'
-      Action:
-        - 'lambda:InvokeFunction'
-      Resource:
-      - Fn::Join:
-        - ':'
-        - - arn:aws:lambda
-          - Ref: AWS::Region
-          - Ref: AWS::AccountId
-          - function:${self:service}-${opt:stage, self:provider.stage}-*
-    - Effect: "Allow"
-      Action:
-        - "s3:PutObject"
-        - "s3:PutBucketPolicy"
-      Resource:
-        - "arn:aws:s3:::office-maker-account-storage-${self:provider.stage}"
+  tags:
+    <<: &commonTags
+      Production: ${self:service}
+      Environment: ${self:provider.stage}
+  environment:
+    DB_TENANT_NAME: !Ref TenantInfoDynamoDB
+    DB_USER_PRI_NAME: !Ref UserPrivilegeDynamoDB
+    ADMIN_POOL_ID: !Ref CognitoUserPoolForTenant
+    ADMIN_CLIENT_ID: !Ref CognitoUserPoolClientForTenant
+    USER_POOL_ID: !Ref CognitoUserPoolForUsers
+    BASE_URL: ${file(config:yaml):API_BASE_URL}
 
 custom:
-  external_file:
-    environment: ${file(./config.yml)}
-  storageBucketName: office-maker-account-storage-${self:provider.stage}
-  remover:
-    bucket:
-      - ${self:custom.storageBucketName}
+  app: worksmap
+  apiGatewayTags: *commonTags
+  cloudWatchLogsTags: *commonTags
+  webpack:
+    webpackConfig: 'webpack.config.js'
+    packager: 'npm'
+    packagerOptions: {}
+    includeModules: true
+  publicKey: ${file(./config.yaml):SSM.PUBLIC_KEY}
+  privateKey: ${file(./configy.yaml):SSM.PRIVATE_KEY}
 
 package:
   individually: true
-  exclude:
-    - ./**
 
 # The `functions` block defines what code to deploy
 functions:
-  authorizer:
-    handler: functions/authorizer/index.handler
-    name: ${self:service}-${self:provider.stage}-authorizer
-    package:
-      include:
-        - functions/authorizer/**
-    environment:
-      sourceIp: ${self:custom.external_file.environment.functions.sourceIp}
-
-  postAuthentication:
-    handler: functions/postAuthentication/index.handler
-    name: ${self:service}-${self:provider.stage}-postAuthentication
-    package:
-      include:
-        - ${self:custom.external_file.environment.privateKeyFile}
-        - functions/postAuthentication/**
-    environment:
-      privatekey: ${self:custom.external_file.environment.privateKeyFile}
-      ldapServer: ${self:custom.external_file.environment.functions.ldapServer}
-      ldapPort: ${self:custom.external_file.environment.functions.ldapPort}
-      dnsServer: ${self:custom.external_file.environment.functions.dnsServer}
-      searchBase: ${self:custom.external_file.environment.functions.searchBase}
-      searchFilter: ${self:custom.external_file.environment.functions.searchFilter}
-      groupSearchBase: ${self:custom.external_file.environment.functions.groupSearchBase}
-      groupSearchFilter: ${self:custom.external_file.environment.functions.groupSearchFilter}
-      logLeve: ${self:custom.external_file.environment.functions.logLevel}
-    # The `events` block defines how to trigger the handler.helloWorld code
+  registerTenant:
     warmup: prod
+    handler: src/admin/registerTenant.handler
+    name: ${self:service}-${self:provider.stage}-createTenant
+    role: !GetAtt APICreateTenantLambdaRole.Arn
+    events: # POST tenants/ body: {tenant}
+      - http:
+          path: admin/tenants
+          method: post
+          <<: &cognitoAdminAuthorizer
+            authorizer:
+              type: COGNITO_USER_POOLS
+              authorizerId: !Ref APIGatewayAuthorizerForTenant
+
+  deleteTenant:
+    warmup: prod
+    handler: src/admin/deleteTenant.handler
+    name: ${self:service}-${self:provider.stage}-deleteTenant
+    events: # DELETE tenants/{tenant_name}
+      - http:
+          path: admin/tenants/{tenant_name}
+          method: delete
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+    environment:
+      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
+
+  checkTenant:
+    warmup: prod
+    handler: src/admin/checkTenant.handler
+    name: ${self:service}-${self:provider.stage}-checkTenant
+    events: # HEAD tenants/{tenant_name}
+      - http:
+          path: admin/tenants/{tenant_name}
+          method: head
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+
+  setTenantDetail:
+    warmup: prod
+    handler: src/admin/setTenantDetailInfo.handler
+    name:
+    events:
+      # body{
+      #      jwtExpireTime?: string | undefined
+      #      stateExpireTime?: string | undefined
+      #      redirectUrl?: string | undefined
+      # }   if undefined, will use default value
+      - http:
+          path: admin/tenants/{tenant}/info
+          method: post
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+    environment:
+      WWW_TEMPLATE_URL: ${file(config:yaml):WWW_TEMPLATE_URL}
+
+  getClientInfo:
+    warmup: prod
+    handler: src/admin/getClientInfo.handler
+    name: ${self:service}-{self:provider.stage}-getClientInfo
     events:
       - http:
-          path: authentication
+          path: admin/client-info
+          method: get
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APILambdaBasicRole.Arn
+
+  registerSAMLProvider:
+    warmup: prod
+    handler: src/admin/SAMLProviderRegister.handler
+    name: ${self:service}-${self:provider.stage}-addSAMLProvider
+    events: # POST saml-providers/ body {tenant, metadata | metadataUrl }
+      - http:
+          path: admin/providers/
           method: post
-          integration: lambda-proxy
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Amz-User-Agent
-              - Pragma
-              - Cache-Control
-              - If-Modified-Since
-            allowCredentials: true
-          authorizer:
-            name: authorizer
-            type: Request
-            resultTtlInSecounds: 0
-            identitySource: context.identity.sourceIp
-    vpc:
-      securityGroupIds: ${self:custom.external_file.environment.provider.vpc.securityGroupIds}
-      subnetIds: ${self:custom.external_file.environment.provider.vpc.subnetIds}
-
-  batchCreateToken:
-    handler: functions/batchCreateToken/index.handler
-    name: ${self:service}-${self:provider.stage}-batchCreateToken
-    package:
-      include:
-        - ${self:custom.external_file.environment.privateKeyFile}
-        - functions/batchCreateToken/**
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
     environment:
-      privatekey: ${self:custom.external_file.environment.privateKeyFile}
-      storageBucketName: ${self:custom.storageBucketName}
-      lambdaRole:
-        Fn::GetAtt: [ IamRoleLambdaExecution, Arn ]
-      arnWhichAllowedToAccessS3: ${self:custom.external_file.environment.arnWhichAllowedToAccessS3._${self:provider.stage}}
+      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
+  updateSAMLProvider:
+    warmup: prod
+    handler: src/admin/SAMLProviderUpdate.handler
+    name: ${self:service}-${self:provider.stage}-updateSAMLProvider
+    events: # POST saml-providers/{tenant} body: {metadata | metadataUrl}
+      - http:
+          path: admin/providers/{tenant}
+          method: post
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
+    environment:
+      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
+
+  deleteSAMLProvider:
+    warmup: prod
+    handler: src/admin/SAMLProviderDelete.handler
+    name: ${self:service}-${self:provider.stage}-deleteSAMLProvider
+    events: # delete saml-providers/{tenant}
+      - http:
+          path: admin/providers/{tenant}
+          method: delete
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
+    environment:
+      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
+
+  getSAMLProvider:
+    warmup: prod
+    handler: src/admin/SAMLProviderGet.handler
+    name: ${self:service}-${self:provider.stage}-getSAMLProvider
+    events: # get saml-providers/{tenant}
+      - http:
+          path: admin/providers/{tenant}
+          method: get
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
+    environment:
+      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
+
+  redirectToLoginUrl:
+    warmup: prod
+    handler: src/user/generateLoginUrl.handler
+    name: ${self:service}-${self:provider.stage}-generateLoginUrl
+    events: # get login/url?tenant=tenant
+      - http:
+          path: saml/login/
+          method: get
+    role: !GetAtt APIUserLambdaRole.Arn
+    environment:
+      COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
+      COGNITO_REGION: ${self:provider.region}
+      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
+      COGNITO_USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
+      privateKey: ${self:custom.privateKey}
+
+  userLoginCallback:
+    warmup: prod
+    handler: src/user/loginHandler.handler
+    name: ${self:service}-${self:provider.stage}-loginHandler
     events:
-      - schedule:
-          name: ${self:service}-${self:provider.stage}-batchCreateToken-schedule
-          rate: cron(*/30 * ? * * *)
-          enabled: true
-          input:
-            key: value
-
+      - http:
+          path: saml/login/callback
+          method: get
+    role: !GetAtt APIUserLambdaRole.Arn
+    environment:
+      publicKey: ${self:custom.publicKey}
+      privateKey: ${self:custom.privateKey}
+      COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
+      COGNITO_REGION: ${self:provider.region}
+      COGNITO_USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
 
 resources:
-  Resources:
-    ApiGatewayRestApi:
-        Type: AWS::ApiGateway::RestApi
-        Properties:
-          Name: ${self:service}-${self:provider.stage}
-    # S3
-    StorageBucket:
-      Type: "AWS::S3::Bucket"
-      Properties:
-        BucketName: ${self:custom.storageBucketName}
-        CorsConfiguration:
-          CorsRules:
-          - AllowedHeaders: ['*']
-            AllowedMethods: [GET]
-            AllowedOrigins: ["*"]
-            Id: ${self:service}-storage-cors
-            MaxAge: '1'
-
-plugins:
-  - serverless-plugin-warmup
-  - serverless-s3-remover
+  Resources: ${file(cloudformation/cf_for_serverless.yaml):Resources}
+  Outputs: ${file(cloudformation/cf_for_serverless.yaml):Outputs}

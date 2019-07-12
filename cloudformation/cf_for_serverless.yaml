@@ -1,0 +1,260 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  CognitoUserPoolForTenant:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ${self:service}-admin-${self:provider.stage}-userPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Mutable: true
+          Name: "email"
+        - AttributeDataType: String
+          Mutable: true
+          Name: "tenant"
+          StringAttributeConstraints:
+            MaxLength: "14"
+          DeveloperOnlyAttribute: false
+
+  CognitoUserPoolClientForTenant:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: ${self:service}-admin-${self:provider.stage}-client
+      ReadAttributes: [ 'email' ]
+      UserPoolId: !Ref CognitoUserPoolForTenant
+      WriteAttributes: [ 'email' ]
+
+  CognitoUserPoolForUsers:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ${self:service}-users-${self:provider.stage}-userPool
+      Schema:
+        - AttributeDataType: String
+          Mutable: true
+          Name: tenant
+          StringAttributeConstraints:
+            MaxLength: "14"
+  CognitoUserPoolClientForUser:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: ${self:service}-users-${self:provider.stage}-client
+      UserPoolId: !Ref CognitoUserPoolForUsers
+
+  APIGatewayAuthorizerForTenant:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      AuthorizerResultTtlInSeconds: 300
+      ProviderARNs:
+        - !GetAtt CognitoUserPoolForTenant.Arn
+      RestApiId: !Ref ApiGatewayRestApi   # serverless created default api gateway id
+      IdentitySource: "method.request.header.Authorization"
+      Type: COGNITO_USER_POOLS
+      Name: CognitoTenantAuthorizer
+  TenantInfoDynamoDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "Tenant"
+          AttributeType: "S"
+        - AttributeName: "Catalog"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Tenant"
+          KeyType: "HASH"
+        - AttributeName: "Catalog"
+          KeyType: "RANGE"
+      BillingMode: "PAY_PER_REQUEST"
+      TableName: ${self:service}-${self:provider.stage}-table
+
+  UserPrivilegeDynamoDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "TenantUser"
+          AttributeType: "S"
+        - AttributeName: "Role"
+          AttributeType: "S"
+        - AttributeName: "TTL"
+          AttributeType: "N"
+      KeySchema:
+        - AttributeName: "TenantUser"
+          KeyType: "HASH"
+        - AttributeName: "Role"
+          KeyType: "RANGE"
+      BillingMode: "PAY_PER_REQUEST"
+      TimeToLiveSpecification:
+        AttributeName: "TTL"
+        Enabled: true
+      TableName: ${self:service}-${self:provider.stage}-userPrivilegeTable
+
+  LambdaDefaultPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: ${self:service}-lambda-default-${self:provider.stage}-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              !Join
+              - ":"
+              - - arn
+                - !Ref AWS::Partition
+                - logs
+                - !Ref AWS::Region
+                - !Ref AWS::AccountId
+                - log-group:/aws/lambda/${self:service}-${self:provider.stage}*:*:*
+
+  AllowCrudTenantDynamodbPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:PutItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:GetItem"
+              - "dynamodb:UpdateItem"
+            Resource: !GetAtt TenantInfoDynamoDB.Arn
+      ManagedPolicyName: ${self:service}-allow-crud-tenant_table-${self:provider.stage}-policy
+
+  AllowReadTenantDynamodbPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "dynamodb:GetItem"
+            Resource: !GetAtt TenantInfoDynamoDB.Arn
+      ManagedPolicyName: ${self:service}-allow-read-tenant_table-${self:provider.stage}-policy
+
+  AllowUpdateCognitoAdminPoolPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "cognito-idp:AdminUpdateUserAttributes"
+            Resource: !GetAtt CognitoUserPoolForTenant.Arn
+      ManagedPolicyName: ${self:service}-update-admin-pool-${self:provider.stage}-policy
+
+
+  AllowAsyncInvokePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "lambda:InvokeAsync"
+            Resource: "*"
+      ManagedPolicyName: ${self:service}-able-async-invoke-lambda-${self:provider.stage}-policy
+
+  AllowCrudSAMLProviderPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "iam:ListSAMLProviders"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "iam:CreateSAMLProvider"
+              - "iam:GetSAMLProvider"
+              - "iam:UpdateSAMLProvider"
+            Resource:
+              !Join
+              - ":"
+              - - arn
+                - !Ref AWS::Partition
+                - iam
+                - ""
+                - !Ref AWS::AccountId
+                - saml-provider/${self:custom.app}.*
+      ManagedPolicyName: ${self:service}-allow-crud-saml-provider-${self:provider.stage}-policy
+
+
+  APICreateTenantLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      <<: &commonForLambdaRole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service: [ "lambda.amazonaws.com" ]
+              Action: [ "sts:AssumeRole" ]
+        Path: "/"
+      ManagedPolicyArns:
+        - !Ref LambdaDefaultPolicy
+        - !Ref AllowCrudTenantDynamodbPolicy
+        - !Ref AllowUpdateCognitoAdminPoolPolicy
+      RoleName: ${self:service}-create-tenant-${self:provider.stage}-lmbd-role
+
+  APICRUDTenantDBLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      <<: *commonForLambdaRole
+      ManagedPolicyArns:
+        - !Ref LambdaDefaultPolicy
+        - !Ref AllowCrudTenantDynamodbPolicy
+      RoleName: ${self:service}-crud-tenant-db-${self:provider.stage}-lmbd-role
+
+  APICRUDSAMLProviderLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      <<: *commonForLambdaRole
+      ManagedPolicyArns:
+        - !Ref LambdaDefaultPolicy
+        - !Ref AllowCrudSAMLProviderPolicy
+      RoleName: ${self:service}-crud-saml-provider-${self:provider.stage}-lmbd-role
+
+  APIUserLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      <<: *commonForLambdaRole
+      ManagedPolicyArns:
+        - !Ref LambdaDefaultPolicy
+        - !Ref AllowReadTenantDynamodbPolicy
+      RoleName: ${self:service}-basic-${self:provider.stage}-user-lmbd-role
+
+  APILambdaBasicRole:
+    Type: AWS::IAM::Role
+    Properties:
+      <<: *commonForLambdaRole
+      ManagedPolicyArns:
+        - !Ref LambdaDefaultPolicy
+      RoleName: ${self:service}-lambda-basic-${self:provider.stage}-lmbd-role
+
+Outputs:
+  WorksmapAdminUserPool:
+    Description: user pool id of the admin pool
+    Value: !Ref CognitoUserPoolForTenant
+    Export:
+      Name: WorksmapAdminPoolId
+  WorksmapAdminPoolClient:
+    Description: user pool client id of admin pool
+    Value: !Ref CognitoUserPoolClientForTenant
+
+  WorksmapUsersUserPool:
+    Description: user pool id of the user pool
+    Value: !Ref CognitoUserPoolForUsers
+    Export:
+      Name: WorksmapUsersPoolId
+  WorksmapUsersPoolClient:
+    Description: user pool client id of users pool
+    Value: !Ref CognitoUserPoolClientForUser
