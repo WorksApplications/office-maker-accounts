@@ -55,6 +55,28 @@ Unit test folder
 - test-flow/
 Smoke test
 
+## Name Explanation
+Administrator: who integrate worksmap with his own company
+User Manager: able to set permission of all users in his own tenant
+Floor Manager: able to modify floor
+ 
+## Provided Functions
+### For Logged In Administrator
+- add, delete, get tenant belongs to him
+- add, update, get, delete saml Provider to worksmap
+- set (add, update) jwt expire length, login expire length, redirect url
+  cannot delete directly (delete when tenant is deleted)
+- (WIP) add, update, delete ip whitelist for this tenant
+- (WIP) add, update, delete user manager for the tenant
+
+### For SAML Login
+- redirect to responding SAML idp
+- response to saml callback
+   
+## Restriction
+- Administrator could not own more than 1 tenant
+
+## Limitaion
 
 
 ## Configuration and Presequence
@@ -65,7 +87,7 @@ Smoke test
 - Create config.yaml
 ```cp config.sample.yaml config.yaml```
   - COGNITO
-    Enter Perferred Cognito Custom domain
+    Enter Preferred Cognito Custom domain
   - API_BASE_URL
     default domain for office-maker api.
     e.g., `api.example.com`
