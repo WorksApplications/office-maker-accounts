@@ -10,10 +10,10 @@ chai.use(chaiAsPromised)
 describe('tenant Name Regex', function () {
   const validNames = [
     'example',
-    'worksmap2',
+    'somemap2',
     'w0r21map',
     'work-map',
-    'workmap-',
+    'wsomemap-',
   ]
 
   it('check valid tenantNames', async () => {

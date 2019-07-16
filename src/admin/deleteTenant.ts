@@ -1,4 +1,4 @@
-import {adminPoolDeleteTenantInfo, deleteCognitoProvider} from '@/cognito/cognitoAdminPoolOperations'
+import {adminPoolDeleteTenantInfo, deleteCognitoProvider} from '@/cognito/cognitoAdminOperations'
 import {deleteOwnedTenant, deleteSAMLInfo, deleteTenantDetailInfo} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 

@@ -2,19 +2,9 @@ import response from '@/lambdaResponse'
 import {samlSign} from '@/user/samlLoginHandler'
 import {getToken} from '@/user/worksmapJWT'
 
-const uuidv4 = require('uuid/v4') //random
 const jwt = require('jsonwebtoken')
-const cookie = require('cookie')
-
-const COGNITO_DOMAIN = process.env.COGNITO_DOMAIN
-const COGNITO_REGION = process.env.COGNITO_REGION
-const TENANT_SAML_NAME_PREFIX = process.env.TENANT_SAML_NAME_PREFIX
-const BASE_URL = process.env.BASE_URL as string
-const COGNITO_USER_CLIENT_ID = process.env.COGNITO_USER_CLIENT_ID
 const privateKey = process.env.privateKey as string
 const publicKey = process.env.publicKey as string
-const defaultJwtExpireLength = 1800 //60*30 seconds = 30 minutes
-const defaultStateExpireLength = 1800 //60*30 seconds = 30 minutes
 
 
 export async function handler( event: any ) {

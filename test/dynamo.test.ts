@@ -1,15 +1,13 @@
+import {
+  deleteOwnedTenant, isTenantNameAvailable, promiseToCreateTenant, queryTenantInfo,
+} from '@/db/dynamoAdminOperations'
 import * as chai from 'chai'
 import {expect} from 'chai'
+
 const chaiAsPromised = require('chai-as-promised')
 const lambda_tester = require('lambda-tester') // load environment
 
 chai.use(chaiAsPromised)
-
-import {
-  isTenantNameAvailable,
-  promiseToCreateTenant,
-  deleteOwnedTenant, queryTenantInfo,
-} from '../src/db/dynamoOperations'
 
 
 describe('dynamoDB', function(){
@@ -19,12 +17,12 @@ describe('dynamoDB', function(){
   });
 
   const itemAddedToDynamo = [
-    [ 'test_user', 'alpha'],
-    [ 'test_user', 'beta'],
+    ['test_user', 'alpha'],
+    ['test_user', 'beta'],
   ];
 
   it('should be able to add item',  () => {
-    itemAddedToDynamo.forEach(async ([name, tenant])=>{
+    itemAddedToDynamo.forEach(async ( [name, tenant])=>{
       await expect(promiseToCreateTenant(name, tenant)).to.be.fulfilled
     })
   })
@@ -33,7 +31,7 @@ describe('dynamoDB', function(){
     'test_user2', 'beta'
   ]
   it('should not be able to add item', async () => {
-      await expect(promiseToCreateTenant('test_user2', 'beta')).to.be.rejected
+    await expect(promiseToCreateTenant('test_user2', 'beta')).to.be.rejected
   })
 
   it('should not use existed tenant name', async () => {
@@ -60,9 +58,6 @@ describe('dynamoDB', function(){
     }
     console.groupEnd()
   })
-
-
-
 
 
   // after(function () {

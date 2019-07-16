@@ -1,4 +1,4 @@
-import {validateOwnership} from '@/cognito/cognitoAdminPoolOperations'
+import {validateOwnership} from '@/cognito/cognitoAdminOperations'
 import {setTenantOptionsInfo} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 

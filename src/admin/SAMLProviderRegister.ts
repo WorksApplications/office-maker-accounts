@@ -1,6 +1,6 @@
 import {
   createCognitoProvider, deleteCognitoProvider, ProviderDetails, validateOwnership,
-} from '@/cognito/cognitoAdminPoolOperations'
+} from '@/cognito/cognitoAdminOperations'
 import {createSAMLInfo, deleteSAMLInfo} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 import {validateTenant} from '@/tenantNameRegex'

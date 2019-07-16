@@ -1,4 +1,4 @@
-import {getLoginTimeFromUser, setLoginTimeForUser} from '@/cognito/cognitoUserPoolOperations'
+import {getLoginTimeFromUser, setLoginTimeForUser} from '@/cognito/cognitoUserOperations'
 import {getTenantOptionsInfo} from '@/db/dynamoAdminOperations'
 import {GetOptionsInfoStruct} from '@/db/dynamoSchema'
 import {getRedirectUrl} from '@/generateUrl'

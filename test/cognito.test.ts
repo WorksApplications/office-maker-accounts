@@ -1,6 +1,6 @@
 import {
   adminPoolAddTenantInfo, createCognitoProvider, getCognitoProvider, userAbleToCreateTenant, validateOwnership,
-} from '@/cognito/cognitoOperations'
+} from '@/cognito/cognitoAdminOperations'
 import * as chai from 'chai'
 import {expect} from 'chai'
 import AWS = require('aws-sdk')
@@ -69,9 +69,16 @@ describe('cognito', function () {
   })
 
   it('user add metadata', async () => {
-    await expect(createCognitoProvider('worksmap.dummy-test', {
-      'MetadataFile': metadata,
-    })).to.be.fulfilled
+    await expect(
+      createCognitoProvider(
+        'worksmap.dummy-test',
+        {
+          'MetadataFile': metadata,
+        },
+        {
+          'email': 'email',
+        },
+      )).to.be.fulfilled
 
     const data = await getCognitoProvider('worksmap.dummy-test')
     const file = data.IdentityProvider.ProviderDetails.MetadataFile

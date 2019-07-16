@@ -36,6 +36,7 @@ provider:
     ADMIN_CLIENT_ID: !Ref CognitoUserPoolClientForTenant
     USER_POOL_ID: !Ref CognitoUserPoolForUsers
     BASE_URL: ${file(config:yaml):API_BASE_URL}
+    TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
 custom:
   app: worksmap
@@ -78,8 +79,6 @@ functions:
           method: delete
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDTenantDBLambdaRole.Arn
-    environment:
-      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
   checkTenant:
     warmup: prod
@@ -124,6 +123,7 @@ functions:
     environment:
       WWW_BASE_URL: ${file(config:yaml):WWW_BASE_URL}
 
+
   worksmapSAMLInfo:
     warmup: prod
     handler: src/admin/worksmapSAMLInfo.handler
@@ -145,8 +145,6 @@ functions:
           method: post
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
-    environment:
-      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
   updateSAMLProvider:
     warmup: prod
@@ -158,8 +156,6 @@ functions:
           method: post
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
-    environment:
-      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
   deleteSAMLProvider:
     warmup: prod
@@ -171,8 +167,6 @@ functions:
           method: delete
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
-    environment:
-      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
   getSAMLProvider:
     warmup: prod
@@ -184,8 +178,7 @@ functions:
           method: get
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
-    environment:
-      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
+
 
   userLogin:
     warnup: prod
@@ -199,14 +192,29 @@ functions:
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
       COGNITO_REGION: ${self:provider.region}
-      TENANT_SAML_NAME_PREFIX: ${self:custom.app}
       COGNITO_USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
       privateKey: ${self:custom.privateKey}
 
+  userLoginRefresh:
+    warnup: prod
+      handler: src/user/loginRefresh.handler
+      name: ${self:service}-${serlf:provider.stage}-userLoginRefresh
+      events: # get /login?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
+        - http:
+            path: login/
+            metho: get
+      role: !GetAtt APIUserLambdaRole.Arn
+      environment:
+        COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
+        COGNITO_REGION: ${self:provider.region}
+        COGNITO_USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
+        privateKey: ${self:custom.privateKey}
+        publicKey: ${self:custom.publicKey}
+
   userLoginCallback:
     warmup: prod
-    handler: src/user/loginHandler.handler
-    name: ${self:service}-${self:provider.stage}-loginHandler
+    handler: src/user/samlLoginHandler.handler
+    name: ${self:service}-${self:provider.stage}-samlLoginHandler
     events:
       - http:
           path: saml/login/callback
