@@ -1,5 +1,5 @@
-import {adminPoolDeleteTenantInfo, deleteCognitoProvider} from '@/cognito/cognitoOperations'
-import {deleteOwnedTenant, deleteSAMLInfo, deleteTenantDetailInfo} from '@/db/dynamoOperations'
+import {adminPoolDeleteTenantInfo, deleteCognitoProvider} from '@/cognito/cognitoAdminPoolOperations'
+import {deleteOwnedTenant, deleteSAMLInfo, deleteTenantDetailInfo} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 
 export async function handler( event: any ) {

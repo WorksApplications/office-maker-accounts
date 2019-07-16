@@ -5,7 +5,7 @@
 # uses to deploy your code to your provider of choice
 
 # The `service` block is the name of the service
-service: Office-Maker-Account
+service: office-maker-tenants
 
 plugins:
   - serverless-webpack
@@ -85,17 +85,31 @@ functions:
     warmup: prod
     handler: src/admin/checkTenant.handler
     name: ${self:service}-${self:provider.stage}-checkTenant
-    events: # HEAD tenants/{tenant_name}
+    events: # HEAD admin/tenants/{tenant_name}
       - http:
           path: admin/tenants/{tenant_name}
           method: head
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDTenantDBLambdaRole.Arn
 
-  setTenantDetail:
+
+  setTenantOptionsInfo:
     warmup: prod
-    handler: src/admin/setTenantDetailInfo.handler
-    name:
+    handler: src/admin/setTenantOptionsInfo.handler
+    name: ${self:service}-${self:provider.stage}-setTenantOptions
+    events: # post admin/tenants/{tenant}/info/options
+      - http:
+          path: admin/tenants/{tenant}/info/options
+          method: post
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+    environment:
+      DEFAULT_LOGIN_BUFFER_TIME: '1800'
+
+  setTenantRequiredInfo:
+    warmup: prod
+    handler: src/admin/setTenantRequiredInfo.handler
+    name: ${self:service}-${self:provider.stage}-setTenantRequired
     events:
       # body{
       #      jwtExpireTime?: string | undefined
@@ -103,17 +117,17 @@ functions:
       #      redirectUrl?: string | undefined
       # }   if undefined, will use default value   json
       - http:
-          path: admin/tenants/{tenant}/info
+          path: admin/tenants/{tenant}/info/required
           method: post
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDTenantDBLambdaRole.Arn
     environment:
-      WWW_TEMPLATE_URL: ${file(config:yaml):WWW_TEMPLATE_URL}
+      WWW_BASE_URL: ${file(config:yaml):WWW_BASE_URL}
 
-  getClientInfo:
+  worksmapSAMLInfo:
     warmup: prod
-    handler: src/admin/getClientInfo.handler
-    name: ${self:service}-{self:provider.stage}-getClientInfo
+    handler: src/admin/worksmapSAMLInfo.handler
+    name: ${self:service}-{self:provider.stage}-worksmapSAMLInfo
     events:
       - http:
           path: admin/client-info
@@ -173,14 +187,14 @@ functions:
     environment:
       TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
-  redirectToLoginUrl:
-    warmup: prod
-    handler: src/user/generateLoginUrl.handler
-    name: ${self:service}-${self:provider.stage}-generateLoginUrl
-    events: # get login/url?tenant=<tenant>
+  userLogin:
+    warnup: prod
+    handler: src/user/userLogin.handler
+    name: ${self:service}-${serlf:provider.stage}-userLogin
+    events: # get /login?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
       - http:
-          path: saml/login/
-          method: get
+          path: login/
+          metho: get
     role: !GetAtt APIUserLambdaRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}

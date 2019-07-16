@@ -1,5 +1,5 @@
-import {deleteCognitoProvider, validateOwnership} from '@/cognito/cognitoOperations'
-import {deleteSAMLInfo} from '@/db/dynamoOperations'
+import {deleteCognitoProvider, validateOwnership} from '@/cognito/cognitoAdminPoolOperations'
+import {deleteSAMLInfo} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 import {validateTenant} from '@/tenantNameRegex'
 

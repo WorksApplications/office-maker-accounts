@@ -2,7 +2,7 @@
 
 const AWS = require('aws-sdk')
 const cognitoUserPool = new AWS.CognitoIdentityServiceProvider({apiVersion: '2016-04-18'})
-import {ADMIN_POOL} from './adminPoolSchema'
+import {ADMIN_POOL} from './cognitoPoolSchema'
 
 interface UserAttributeStruct {
   Name: string,
@@ -38,13 +38,13 @@ async function getTenantAttributeFromUser( username: string ) {
   return userAttributes.filter(item => item.Name === ADMIN_POOL.ATTR_NAME_TENANT).map(item => item.Value)
 }
 
-export async function adminPoolAddTenantInfo( user: string, tenant: string ) {
-  //tenant is a comma separated string
+export async function adminPoolAddTenantInfo( user: string, tenants: string ) {
+  //tenant is a comma separated string in the future
   return await cognitoUserPool.adminUpdateUserAttributes({
     UserAttributes: [
       {
         Name: ADMIN_POOL.ATTR_NAME_TENANT,
-        Value: tenant,
+        Value: tenants,
       },
     ],
     UserPoolId: process.env.ADMIN_POOL_ID,
@@ -53,6 +53,7 @@ export async function adminPoolAddTenantInfo( user: string, tenant: string ) {
 }
 
 export async function adminPoolDeleteTenantInfo( user: string, tenantToDelete: string ) {
+  //require tenantToDelete in case need in the future
   return await cognitoUserPool.adminDeleteUserAttributes({
     UserAttributeNames: [
       ADMIN_POOL.ATTR_NAME_TENANT,
@@ -63,15 +64,13 @@ export async function adminPoolDeleteTenantInfo( user: string, tenantToDelete: s
 }
 
 
-export async function createCognitoProvider( samlProviderName: string, providerDetails: ProviderDetails ) {
+export async function createCognitoProvider( samlProviderName: string, providerDetails: ProviderDetails, attributeMap: any ) {
   await cognitoUserPool.createIdentityProvider({
     ProviderType: 'SAML',
     ProviderName: samlProviderName,
     UserPoolId: process.env.USER_POOL_ID,
     ProviderDetails: providerDetails,
-    AttributeMapping: {
-      'email': 'email',
-    },
+    AttributeMapping: attributeMap,
   }).promise()
 
   const data = await cognitoUserPool.describeUserPoolClient({
@@ -111,13 +110,12 @@ export interface ProviderDetails {
   'MetadataFile'?: string
 }
 
-export async function updateCognitoProvider( samlProviderName: string, providerDetails: ProviderDetails ) {
+export async function updateCognitoProvider( samlProviderName: string, providerDetails: ProviderDetails, attributeMap: any ) {
   return await cognitoUserPool.updateIdentityProvider({
     ProviderName: samlProviderName,
     UserPoolId: process.env.USER_POOL_ID,
     ProviderDetails: providerDetails,
-
-
-  })
+    AttributeMapping: attributeMap,
+  }).promise()
 }
 

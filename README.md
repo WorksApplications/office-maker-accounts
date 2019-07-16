@@ -66,13 +66,21 @@ Floor Manager: able to modify floor
 - add, update, get, delete saml Provider to worksmap
 - set (add, update) jwt expire length, login expire length, redirect url
   cannot delete directly (delete when tenant is deleted)
-- (WIP) add, update, delete ip whitelist for this tenant
 - (WIP) add, update, delete user manager for the tenant
 
 ### For SAML Login
 - redirect to responding SAML idp
 - response to saml callback
-   
+
+## IP Restrict Functions
+For each tenant, they could choose to use `login free` and `login restrict` functions.
+
+Login Free: anybody in given IPs wil be able to access the tenant information
+
+Login Restrict: in this tenant, user could only sign in, refresh token within given ips
+
+Normally, login restrict IPs should includes login free IPs.
+
 ## Restriction
 - Administrator could not own more than 1 tenant
 

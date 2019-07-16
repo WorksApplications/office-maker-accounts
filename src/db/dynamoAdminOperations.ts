@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk')
-import {TB_TENANT, TB_USER_PRIV} from './dynamoSchema'
+import {GetOptionsInfoStruct, TB_TENANT} from './dynamoSchema'
 import isEmpty = require('lodash/isEmpty')
 
 const dynamoDB = new AWS.DynamoDB({apiVersion: '2012-08-10'})
@@ -141,7 +141,7 @@ export async function queryTenantInfo( tenantName: string ) {
   }
 }
 
-export async function addTenantDetailInfo( tenantName: string, jwtExpireTime: string, stateExpireTime: string, redirectUrl: string ) {
+export async function addTenantRequiredInfo( tenantName: string, jwtExpireTime: string, stateExpireTime: string, redirectUrl: string ) {
   const params = {
     TableName: TB_TENANT.name,
     Item: {
@@ -155,6 +155,54 @@ export async function addTenantDetailInfo( tenantName: string, jwtExpireTime: st
   return await dynamoDB.putItem(params).promise()
 }
 
+export async function setTenantOptionsInfo( tenantName: string, enableLoginFree: boolean, enableLoginRestrict: boolean,
+                                            loginFreeIPs: string[], loginRestrictIPs: string[], bufferTime: string ) {
+  let params = {
+    TableName: TB_TENANT.name,
+    Item: {
+      [TB_TENANT.TENANT]: {S: tenantName},
+      [TB_TENANT.CATALOG]: {S: TB_TENANT.CATALOG_V_LOGIN_RESTRICT},
+      [TB_TENANT.LOGIN_FREE]: {BOOL: enableLoginFree},
+      [TB_TENANT.LOGIN_RESTRICT]: {BOOL: enableLoginRestrict},
+      [TB_TENANT.LOGIN_FREE_IPS]: {SS: loginFreeIPs},
+      [TB_TENANT.LOGIN_RESTRICT_IPS]: {SS: loginRestrictIPs},
+      [TB_TENANT.LOGIN_RESTRICT_BUFFER]: {S: bufferTime},
+    },
+  }
+  return await dynamoDB.putItem(params).promise()
+}
+
+/**
+ * If failed to get options, all not enabled
+ * @param tenantName
+ */
+export async function getTenantOptionsInfo( tenantName: string ): Promise<GetOptionsInfoStruct> {
+  let params = {
+    TableName: TB_TENANT.name,
+    Key: {
+      [TB_TENANT.TENANT]: {S: tenantName},
+      [TB_TENANT.CATALOG]: {S: TB_TENANT.CATALOG_V_LOGIN_RESTRICT},
+    },
+  }
+  const data = await dynamoDB.getItem(params).promise()
+  if ( !data.Item ) {
+    return {
+      enableLoginFree: false,
+      enableLoginRestrict: false,
+      loginFreeIPs: [],
+      loginRestrictIPs: [],
+      bufferTime: '0',
+    }
+  }
+  return {
+    enableLoginFree: data.Item[TB_TENANT.LOGIN_FREE].BOOL,
+    enableLoginRestrict: data.Item[TB_TENANT.LOGIN_RESTRICT].BOOL,
+    loginFreeIPs: data.Item[TB_TENANT.LOGIN_FREE_IPS].SS,
+    loginRestrictIPs: data.Item[TB_TENANT.LOGIN_RESTRICT_IPS].SS,
+    bufferTime: data.item[TB_TENANT.LOGIN_RESTRICT_BUFFER].S,
+  }
+}
+
 export async function deleteTenantDetailInfo( tenantName: string ) {
   const params = {
     TableName: TB_TENANT.name,
@@ -164,26 +212,4 @@ export async function deleteTenantDetailInfo( tenantName: string ) {
     },
   }
   return await dynamoDB.deleteItem(params).promise()
-}
-
-
-export async function setPrivilege( tenantName: string, creator: string, targetUser: string, condition: string, role: string, ttl?: number ) {
-  let item: any = {
-    [TB_USER_PRIV.TENANT_USER]: {S: tenantName + ':' + targetUser},
-    [TB_USER_PRIV.ROLE]: {S: role},
-    [TB_USER_PRIV.CREATOR]: {S: creator},
-  }
-  if ( typeof ttl !== 'undefined' ) {
-    item[TB_USER_PRIV.TTL] = {N: '' + ttl}
-  }
-  const params = {
-    TableName: TB_USER_PRIV.name,
-    Item: item,
-  }
-  return await dynamoDB.putItem(params).promise()
-}
-
-//todo: each one could only has one privilege role, change format
-export async function deletePrivilege( tenantName: string, creator: string ) {
-
 }

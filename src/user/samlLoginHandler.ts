@@ -1,5 +1,9 @@
+import {getLoginTimeFromUser, setLoginTimeForUser} from '@/cognito/cognitoUserPoolOperations'
+import {getTenantOptionsInfo} from '@/db/dynamoAdminOperations'
+import {GetOptionsInfoStruct} from '@/db/dynamoSchema'
 import {getRedirectUrl} from '@/generateUrl'
 import response from '@/lambdaResponse'
+import {getToken} from '@/user/worksmapJWT'
 import axios from 'axios'
 
 const jwt = require('jsonwebtoken')
@@ -11,8 +15,8 @@ const COGNITO_REGION = process.env.COGNITO_REGION
 const BASE_URL = process.env.BASE_URL as string
 const REDIRECT_URL = getRedirectUrl(BASE_URL)
 const COGNITO_USER_CLIENT_ID = process.env.COGNITO_USER_CLIENT_ID
-const privateKey = process.env.privateKey
-const publicKey = process.env.publicKey
+const privateKey = process.env.privateKey as string
+const publicKey = process.env.publicKey as string
 
 const cognitoDomain = 'https://' + COGNITO_DOMAIN + '.auth.' + COGNITO_REGION + '.amazoncognito.com'
 
@@ -35,21 +39,19 @@ export async function handler( event: any ) {
     const data = await reverseState(state, sessionId)
     const originState = data.state
     const jwtExpireLength = data.jwtExpireLength
-    //todo: change to tenant domain
     const tenant = data.tenant
+    const ip = data.ip
+
 
     const token = await oAuthGetTokenWithCode(code)
     const userInfo = await oAuthGetUserInfo(token.data.access_token)
+
     console.log('result: ' + JSON.stringify(userInfo.data))
     const userId = userInfo.data.sub
     const role = userInfo.data.role
+
     if ( userId ) {
-      const jwt = jwtSign({
-        exp: Math.floor(Date.now() / 1000) + jwtExpireLength,
-        userId: userId,
-        role: role ? role : 'Normal',
-        tenantDomain: tenant,
-      })
+      const jwt = await samlSign(tenant, ip, userId, role, jwtExpireLength)
       return {
         statusCode: 302,
         headers: {
@@ -63,20 +65,33 @@ export async function handler( event: any ) {
     console.error(e)
     return response(401, JSON.stringify(e.message))
   }
-
 }
 
-function jwtSign( obj: any ) {
-  return jwt.sign(obj, privateKey, {algorithm: 'RS512'})
+export async function samlSign( tenant: string, ip: string, userId: string, role: string, jwtExpireLength: number ) {
+  const opt: GetOptionsInfoStruct = await getTenantOptionsInfo(tenant)
+  const currentTime = Math.floor(Date.now() / 1000)
+  if ( opt.enableLoginRestrict && !opt.loginRestrictIPs.includes(ip) ) {
+    const lastGreenTime = await getLoginTimeFromUser(userId)
+
+    const greenTimeTill = parseInt(opt.bufferTime) + lastGreenTime
+    if ( greenTimeTill < currentTime )
+      throw new Error(`you have left too long from required IP`)
+  }
+
+  if ( opt.enableLoginRestrict && opt.loginRestrictIPs.includes(ip) ) {
+    await setLoginTimeForUser(userId, currentTime.toString())
+  }
+  return getToken(privateKey, userId, tenant, role ? role : 'Guest', jwtExpireLength)
 }
 
 interface ReverseStruct {
   state: string,
   jwtExpireLength: number,
   tenant: string
+  ip: string
 }
 
-function reverseState( state: string, session: string ): Promise<ReverseStruct> {
+async function reverseState( state: string, session: string ): Promise<ReverseStruct> {
   return new Promise(( resolve, reject ) => {
     jwt.verify(state, publicKey, {
       algorithm: ['RS512'],
@@ -100,10 +115,10 @@ function reverseState( state: string, session: string ): Promise<ReverseStruct> 
         state: data.state,
         jwtExpireLength: data.jwtExpire,
         tenant: data.tenant,
+        ip: data.ip,
       })
     })
   })
-
 }
 
 function oAuthGetTokenWithCode( code: string ) {

@@ -1,7 +1,7 @@
 import {
   createCognitoProvider, deleteCognitoProvider, ProviderDetails, validateOwnership,
-} from '@/cognito/cognitoOperations'
-import {createSAMLInfo, deleteSAMLInfo} from '@/db/dynamoOperations'
+} from '@/cognito/cognitoAdminPoolOperations'
+import {createSAMLInfo, deleteSAMLInfo} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 import {validateTenant} from '@/tenantNameRegex'
 
@@ -10,6 +10,7 @@ export async function handler (event: any) {
   const tenantName: string = event['queryStringParameters']['tenant']
   const metadata: string | undefined = event['body']['metadata']
   const metadataUrl: string | undefined = event['body']['metadataUrl']
+  const attributeMap: any = event['body']['attributeMap']
   const TENANT_SAML_NAME_PREFIX = process.env.TENANT_SAML_NAME_PREFIX
   const samlProviderName = TENANT_SAML_NAME_PREFIX + '.' + tenantName
 
@@ -51,7 +52,7 @@ export async function handler (event: any) {
   try{
     //todo: identities is currently not support.
     await createSAMLInfo(tenantName, samlProviderName)
-    await createCognitoProvider(samlProviderName, providerDetails)
+    await createCognitoProvider(samlProviderName, providerDetails, attributeMap)
     return response(200)
   } catch (e) {
     await rollback(tenantName, samlProviderName).catch(e => {

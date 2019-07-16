@@ -1,13 +1,15 @@
+import {
+  adminPoolAddTenantInfo as cognitoAddTenantRecord, userAbleToCreateTenant,
+} from '@/cognito/cognitoAdminPoolOperations'
+import {promiseToCreateTenant as dbAddRecordIfAble} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
-import {promiseToCreateTenant as dbAddRecordIfAble} from '@/db/dynamoOperations'
-import {adminPoolAddTenantInfo as cognitoAddTenantRecord, userAbleToCreateTenant} from '@/cognito/cognitoOperations'
 import {validateTenant} from '@/tenantNameRegex'
 
 /**
  * @param event
  * @return {{headers: *, body: *, statusCode: *}|{body: *, statusCode: *}}
  */
-export async function handler(event: any){
+export async function handler( event: any){
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
   const tenantName = event['queryStringParameters']['tenant']
 

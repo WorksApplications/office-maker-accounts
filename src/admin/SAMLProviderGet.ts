@@ -1,4 +1,4 @@
-import {getCognitoProvider, ProviderDetails, validateOwnership} from '@/cognito/cognitoOperations'
+import {getCognitoProvider, ProviderDetails, validateOwnership} from '@/cognito/cognitoAdminPoolOperations'
 import response from '@/lambdaResponse'
 import {validateTenant} from '@/tenantNameRegex'
 

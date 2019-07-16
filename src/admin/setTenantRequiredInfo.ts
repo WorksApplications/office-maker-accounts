@@ -1,7 +1,7 @@
-import {addTenantDetailInfo, isOwnerOfTenant} from '@/db/dynamoOperations'
+import {validateOwnership} from '@/cognito/cognitoAdminPoolOperations'
+import {addTenantRequiredInfo} from '@/db/dynamoAdminOperations'
 import {getTenantBaseUrl} from '@/generateUrl'
 import response from '@/lambdaResponse'
-import {validateTenant} from '@/tenantNameRegex'
 
 
 interface BodyParameters {
@@ -10,9 +10,9 @@ interface BodyParameters {
   redirectUrl?: string | undefined
 }
 
-const defaultJwtExpireLength = 172800 //60*60*24*2 seconds  = 2 days
-const defaultStateExpireLength = 3600 //60*60 seconds = 1 hour
-const BASE_URL = process.env.BASE_URL as string
+const defaultJwtExpireLength = 1800 //60*30 seconds = 30 minutes
+const defaultStateExpireLength = 1800 //60*30 seconds = 30 minutes
+const WWW_BASE_URL = process.env.WWW_BASE_URL as string // default
 
 /**
  * @param event
@@ -21,28 +21,32 @@ const BASE_URL = process.env.BASE_URL as string
 export async function handler( event: any ) {
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
   const tenantName = event['pathParameters']['tenant']
-  const body = event['body']
+  let body
+  try {
+    body = JSON.parse(event['body'])
+  } catch (e) {
+    return response(400, 'API requires \'application/json\' style body')
+  }
 
-
-  const defaultRedirectUrl = getTenantBaseUrl(BASE_URL, tenantName)
+  const defaultRedirectUrl = getTenantBaseUrl(WWW_BASE_URL, tenantName)
   const jwtExpireTime: string = body['jwtExpireTime'] ? body['jwtExpireTime'] : '' + defaultJwtExpireLength
   const stateExpireTime: string = body['stateExpireTime'] ? body['stateExpireTime'] : '' + defaultStateExpireLength
   const redirectUrl: string = body['redirectUrl'] ? body['redirectUrl'] : defaultRedirectUrl
-  try {
-    await validateTenant(tenantName)
-  } catch (e) {
-    return response(400, e.message)
+  const bodyParameters: BodyParameters = {
+    jwtExpireTime: jwtExpireTime,
+    stateExpireTime: stateExpireTime,
+    redirectUrl: redirectUrl,
   }
 
   try {
-    await isOwnerOfTenant(userName, tenantName)
+    await validateOwnership(userName, tenantName)
   } catch (e) {
     return response(409, 'user don\'t owns the tenant')
   }
 
   try {
-    await addTenantDetailInfo(tenantName, jwtExpireTime, stateExpireTime, redirectUrl)
-    return response(200)
+    await addTenantRequiredInfo(tenantName, jwtExpireTime, stateExpireTime, redirectUrl)
+    return response(200, JSON.stringify(bodyParameters))
   } catch (e) {
     console.log(e)
     return response(400, 'unexpected error when saving tenant info into cognito')

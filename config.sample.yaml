@@ -2,7 +2,8 @@ COGNITO:
   ADMIN_USER_POOL_COGNITO_DOMAIN: 'example-admin'
   USERS_USER_POOL_COGNITO_DOMAIN: 'example-users'
 
-BASE_URL: ''
+BASE_URL: ''     # base url for api
+WWW_BASE_URL: '' # base url for www site
 
 SSM:
   PUBLIC_KEY: ${ssm:key_name_to_use~true}

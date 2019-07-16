@@ -6,7 +6,8 @@ export async function validateTenant(tenantName: string){
   if ( tenantName.length < 4 ) {
     throw new Error('given tenantName is too short. Minimum length is 4')
   }
-  if ( blackList.includes(tenantName) ) {
+
+  if ( blackList.filter(x => x.includes(tenantName)).length > 0 ) {
     throw new Error('given tenantName is reserved or not allowed')
   }
   if (tenant_regex.test(tenantName)) {
