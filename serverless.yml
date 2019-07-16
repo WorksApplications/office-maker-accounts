@@ -35,7 +35,7 @@ provider:
     ADMIN_POOL_ID: !Ref CognitoUserPoolForTenant
     ADMIN_CLIENT_ID: !Ref CognitoUserPoolClientForTenant
     USER_POOL_ID: !Ref CognitoUserPoolForUsers
-    BASE_URL: ${file(config:yaml):API_BASE_URL}
+    BASE_URL: ${file(config.yaml):API_BASE_URL}
     TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 
 custom:
@@ -48,7 +48,7 @@ custom:
     packagerOptions: {}
     includeModules: true
   publicKey: ${file(./config.yaml):SSM.PUBLIC_KEY}
-  privateKey: ${file(./configy.yaml):SSM.PRIVATE_KEY}
+  privateKey: ${file(./config.yaml):SSM.PRIVATE_KEY}
 
 package:
   individually: true
@@ -121,7 +121,7 @@ functions:
           <<: *cognitoAdminAuthorizer
     role: !GetAtt APICRUDTenantDBLambdaRole.Arn
     environment:
-      WWW_BASE_URL: ${file(config:yaml):WWW_BASE_URL}
+      WWW_BASE_URL: ${file(./config.yaml):WWW_BASE_URL}
 
 
   worksmapSAMLInfo:
@@ -183,11 +183,11 @@ functions:
   userLogin:
     warnup: prod
     handler: src/user/userLogin.handler
-    name: ${self:service}-${serlf:provider.stage}-userLogin
+    name: ${self:service}-${self:provider.stage}-userLogin
     events: # get /login?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
       - http:
           path: login/
-          metho: get
+          method: get
     role: !GetAtt APIUserLambdaRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
@@ -197,19 +197,19 @@ functions:
 
   userLoginRefresh:
     warnup: prod
-      handler: src/user/loginRefresh.handler
-      name: ${self:service}-${serlf:provider.stage}-userLoginRefresh
-      events: # get /login?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
-        - http:
-            path: login/
-            metho: get
-      role: !GetAtt APIUserLambdaRole.Arn
-      environment:
-        COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
-        COGNITO_REGION: ${self:provider.region}
-        COGNITO_USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
-        privateKey: ${self:custom.privateKey}
-        publicKey: ${self:custom.publicKey}
+    handler: src/user/loginRefresh.handler
+    name: ${self:service}-${self:provider.stage}-userLoginRefresh
+    events: # get /login/refresh?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
+      - http:
+          path: login/refresh/
+          metho: get
+    role: !GetAtt APIUserLambdaRole.Arn
+    environment:
+      COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
+      COGNITO_REGION: ${self:provider.region}
+      COGNITO_USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
+      privateKey: ${self:custom.privateKey}
+      publicKey: ${self:custom.publicKey}
 
   userLoginCallback:
     warmup: prod
