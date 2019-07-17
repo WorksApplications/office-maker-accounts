@@ -310,8 +310,7 @@ Outputs:
   WorksmapAdminUserPool:
     Description: user pool id of the admin pool
     Value: !Ref CognitoUserPoolForTenant
-    Export:
-      Name: WorksmapAdminPoolId
+
   WorksmapAdminPoolClient:
     Description: user pool client id of admin pool
     Value: !Ref CognitoUserPoolClientForTenant
@@ -319,8 +318,7 @@ Outputs:
   WorksmapUsersUserPool:
     Description: user pool id of the user pool
     Value: !Ref CognitoUserPoolForUsers
-    Export:
-      Name: WorksmapUsersPoolId
+
   WorksmapUsersPoolClient:
     Description: user pool client id of users pool
     Value: !Ref CognitoUserPoolClientForUser
