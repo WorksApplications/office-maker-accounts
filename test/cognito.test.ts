@@ -11,7 +11,7 @@ chai.use(chaiAsPromised)
 
 const path = require('path')
 let fs = require('fs')
-let data = fs.readFileSync(path.resolve(__dirname, './env.json'), 'utf8')
+let data = fs.readFileSync(path.resolve(__dirname, '../test-flow/env.json'), 'utf8')
 let args = JSON.parse(data)
 const COGNITO_POOL_ADMIN = process.env.COGNITO_POOL_ADMIN ? process.env.COGNITO_POOL_ADMIN : args.COGNITO_POOL_ADMIN
 process.env.ADMIN_POOL_ID = COGNITO_POOL_ADMIN

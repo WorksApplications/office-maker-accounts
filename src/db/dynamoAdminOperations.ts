@@ -157,17 +157,23 @@ export async function addTenantRequiredInfo( tenantName: string, jwtExpireTime: 
 
 export async function setTenantOptionsInfo( tenantName: string, enableLoginFree: boolean, enableLoginRestrict: boolean,
                                             loginFreeIPs: string[], loginRestrictIPs: string[], bufferTime: string ) {
-  let params = {
+  console.log(`tenantname: ${tenantName}\nenableLoginFree: ${enableLoginFree}\nenableLoginRestrict: ${enableLoginRestrict}\n`)
+  console.log(`loginFreeIPs: ${loginFreeIPs}\nloginRestrictIPs: ${loginRestrictIPs}\nbufferTime: ${bufferTime}`)
+  let params: any = {
     TableName: TB_TENANT.name,
     Item: {
       [TB_TENANT.TENANT]: {S: tenantName},
       [TB_TENANT.CATALOG]: {S: TB_TENANT.CATALOG_V_LOGIN_RESTRICT},
       [TB_TENANT.LOGIN_FREE]: {BOOL: enableLoginFree},
       [TB_TENANT.LOGIN_RESTRICT]: {BOOL: enableLoginRestrict},
-      [TB_TENANT.LOGIN_FREE_IPS]: {SS: loginFreeIPs},
-      [TB_TENANT.LOGIN_RESTRICT_IPS]: {SS: loginRestrictIPs},
       [TB_TENANT.LOGIN_RESTRICT_BUFFER]: {S: bufferTime},
     },
+  }
+  if ( loginFreeIPs.length > 0 ) {
+    params.Item[TB_TENANT.LOGIN_FREE_IPS] = {SS: loginFreeIPs}
+  }
+  if ( loginRestrictIPs.length > 0 ) {
+    params.Item[TB_TENANT.LOGIN_RESTRICT_IPS] = {SS: loginRestrictIPs}
   }
   return await dynamoDB.putItem(params).promise()
 }

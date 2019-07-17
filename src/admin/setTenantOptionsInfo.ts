@@ -15,6 +15,7 @@ interface BodyParametersForOptions {
  * @return {{headers: *, body: *, statusCode: *}|{body: *, statusCode: *}}
  */
 export async function handler( event: any ) {
+  console.log(event)
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
   const tenantName = event['pathParameters']['tenant_name']
 

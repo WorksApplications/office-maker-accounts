@@ -42,10 +42,10 @@ echo "{
   \"DB_USER_PRI_NAME\": \"office-maker-tenants-dev-userPrivilegeTable\"
 }" > ../test-flow/env.json
 
-if ! [[ ${STAGE} =~ prod|production ]]; then
-	env COGNITO_POOL_ADMIN="$COGNITO_POOL_ADMIN" COGNITO_CLIENT_ADMIN="$COGNITO_CLIENT_ADMIN" COGNITO_POOL_USER="$COGNITO_POOL_USER" \
-	COGNITO_CLIENT_USER="$COGNITO_CLIENT_USER" ENDPOINT="$ENDPOINT" TEST_USERNAME="$TEST_USERNAME" TEMPORARY_PASSWORD="$TEMPORARY_PASSWORD" \
-	../node_modules/.bin/mocha --require ts-node/register --require tsconfig-paths/register "../test-flow/flow.test.js"
-fi
+#if ! [[ ${STAGE} =~ prod|production ]]; then
+#	env COGNITO_POOL_ADMIN="$COGNITO_POOL_ADMIN" COGNITO_CLIENT_ADMIN="$COGNITO_CLIENT_ADMIN" COGNITO_POOL_USER="$COGNITO_POOL_USER" \
+#	COGNITO_CLIENT_USER="$COGNITO_CLIENT_USER" ENDPOINT="$ENDPOINT" TEST_USERNAME="$TEST_USERNAME" TEMPORARY_PASSWORD="$TEMPORARY_PASSWORD" \
+#	../node_modules/.bin/mocha --require ts-node/register --require tsconfig-paths/register "../test-flow/flow.test.js"
+#fi
 
 

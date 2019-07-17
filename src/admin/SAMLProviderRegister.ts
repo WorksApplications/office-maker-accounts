@@ -58,6 +58,7 @@ export async function handler (event: any) {
     await createCognitoProvider(samlProviderName, providerDetails, attributeMap)
     return response(200)
   } catch (e) {
+    console.log(e)
     await rollback(tenantName, samlProviderName).catch(e => {
       return response(500, e.message)
     })

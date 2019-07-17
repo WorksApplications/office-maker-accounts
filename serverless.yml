@@ -35,6 +35,7 @@ provider:
     ADMIN_POOL_ID: !Ref CognitoUserPoolForTenant
     ADMIN_CLIENT_ID: !Ref CognitoUserPoolClientForTenant
     USER_POOL_ID: !Ref CognitoUserPoolForUsers
+    USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
     BASE_URL: ${file(config.yaml):API_BASE_URL}
     TENANT_SAML_NAME_PREFIX: ${self:custom.app}
 

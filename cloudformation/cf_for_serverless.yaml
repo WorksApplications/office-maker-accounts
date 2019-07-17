@@ -123,7 +123,9 @@ Resources:
               - "dynamodb:DeleteItem"
               - "dynamodb:GetItem"
               - "dynamodb:UpdateItem"
-            Resource: !GetAtt TenantInfoDynamoDB.Arn
+            Resource:
+              - !GetAtt TenantInfoDynamoDB.Arn
+              - !GetAtt UserPrivilegeDynamoDB.Arn
       ManagedPolicyName: ${self:service}-allow-crud-tenant_table-${self:provider.stage}-policy
 
   AllowReadTenantDynamodbPolicy:
@@ -151,8 +153,36 @@ Resources:
               - "cognito-idp:UpdateUserAttributes"
               - "cognito-idp:UpdateIdentityProvider"
               - "cognito-idp:AdminGetUser"
-            Resource: !GetAtt CognitoUserPoolForTenant.Arn
+              - "cognito-idp:DescribeUserPoolClient"
+              - "cognito-idp:UpdateUserPoolClient"
+              - "cognito-idp:AdminDeleteUserAttributes"
+            Resource:
+              - !GetAtt CognitoUserPoolForTenant.Arn
       ManagedPolicyName: ${self:service}-crud-admin-pool-${self:provider.stage}-policy
+
+
+  AllowCRUDCognitoUserPoolPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cognito-idp:AdminUpdateUserAttributes"
+              - "cognito-idp:DeleteIdentityProvider"
+              - "cognito-idp:DeleteUserAttributes"
+              - "cognito-idp:UpdateUserAttributes"
+              - "cognito-idp:UpdateIdentityProvider"
+              - "cognito-idp:CreateIdentityProvider"
+              - "cognito-idp:AdminGetUser"
+              - "cognito-idp:DescribeUserPoolClient"
+              - "cognito-idp:UpdateUserPoolClient"
+              - "cognito-idp:DescribeIdentityProvider"
+              - "cognito-idp:AdminDeleteUserAttributes"
+            Resource:
+              - !GetAtt CognitoUserPoolForUsers.Arn
+      ManagedPolicyName: ${self:service}-crud-user-pool-${self:provider.stage}-policy
 
   AllowUpdateCognitoAdminPoolPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -264,6 +294,7 @@ Resources:
         - !Ref LambdaDefaultPolicy
         - !Ref AllowCrudSAMLProviderPolicy
         - !Ref AllowCRUDCognitoAdminPoolPolicy
+        - !Ref AllowCRUDCognitoUserPoolPolicy
         - !Ref AllowCrudTenantDynamodbPolicy
       RoleName: ${self:service}-all-permissoin-${self:provider.stage}-lmbd-role
 

@@ -81,18 +81,14 @@ describe('tenant admin should do what he could do', function () {
   })
 
   it('submit saml', async () => {
-    console.group('submit saml')
     try {
       const data = await axios.post(`admin/providers?tenant=${tenant_name_to_use}`, {
         metadata: metadata,
         attributeMap: {
           'email': 'email',
-          'role': 'roles',
+          'custom:role': 'roles',
         },
       })
-
-      expect(data.status).to.be.equals(400)
-      console.groupEnd()
     } catch (e) {
       console.log(e.response)
       throw e
@@ -103,7 +99,7 @@ describe('tenant admin should do what he could do', function () {
   it('get saml', async () => {
     const data = await axios.get(`admin/providers/${tenant_name_to_use}`)
     expect(data.status).to.be.equals(200)
-    expect(data.data.metadata).to.equals(metadata)
+    expect(data.data.MetadataFile).to.equals(metadata)
   })
 
   it('update saml', async () => {
@@ -111,11 +107,37 @@ describe('tenant admin should do what he could do', function () {
       metadata: metadata,
       attributeMap: {
         'email': 'email',
-        'role': 'roles',
+        'custom:role': 'roles',
       },
     })
     expect(data.status).to.be.equals(200)
   })
+
+  it('delete saml provider', async () => {
+    try {
+      const data = await axios.delete(`admin/providers/${tenant_name_to_use}`)
+      expect(data.status).to.be.equals(200)
+    } catch (e) {
+      console.log(e.response.data)
+      throw e
+    }
+  })
+
+  it('submit saml after delete', async () => {
+    try {
+      const data = await axios.post(`admin/providers?tenant=${tenant_name_to_use}`, {
+        metadata: metadata,
+        attributeMap: {
+          'email': 'email',
+          'custom:role': 'roles',
+        },
+      })
+    } catch (e) {
+      console.log(e.response)
+      throw e
+    }
+  })
+
 
   it('update necessary info', async () => {
     const data = await axios.post(`admin/tenants/${tenant_name_to_use}/info/required`, {
@@ -127,19 +149,40 @@ describe('tenant admin should do what he could do', function () {
   })
 
   it('update option info', async () => {
-    const data = await axios.post(`admin/tenants/${tenant_name_to_use}/info/options`, {
-      enableLoginFree: true,
-      enableLoginRestrict: false,
-      loginFreeIPs: ['221.249.116.206'],
-      loginRestrictIPs: ['221.249.116.206'],
-      bufferTime: '1800',
-    })
-    expect(data.status).to.be.equals(200)
+    try {
+      const data = await axios.post(`admin/tenants/${tenant_name_to_use}/info/options`, {
+        enableLoginFree: true,
+        enableLoginRestrict: false,
+        loginFreeIPs: ['221.249.116.206'],
+        loginRestrictIPs: ['221.249.116.206'],
+        bufferTime: '1800',
+      })
+      expect(data.status).to.be.equals(200)
+    } catch (e) {
+      console.log(e.response.data)
+      throw e
+    }
   })
 
+  it('get saml info', async () => {
+    try {
+      const data = await axios.get('admin/client-info')
+      expect(data.status).to.be.equals(200)
+    } catch (e) {
+      console.log(e.response.data)
+      throw e
+    }
+  })
+
+
   it('try delete tenant', async () => {
-    const data = await axios.delete('admin/tenants/' + tenant_name_to_use)
-    expect(data.status).to.be.equals(200)
+    try {
+      const data = await axios.delete('admin/tenants/' + tenant_name_to_use)
+      expect(data.status).to.be.equals(200)
+    } catch (e) {
+      console.log(e.response.data)
+      throw e
+    }
   })
 })
 

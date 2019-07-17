@@ -84,18 +84,18 @@ export async function createCognitoProvider( samlProviderName: string, providerD
   }).promise()
 
   const data = await cognitoUserPool.describeUserPoolClient({
-    ClientId: process.env.ADMIN_CLIENT_ID,
-    UserPoolId: process.env.ADMIN_POOL_ID,
+    ClientId: process.env.USER_CLIENT_ID,
+    UserPoolId: process.env.USER_POOL_ID,
   }).promise()
   let providerList: string[] = []
-  if ( data.UserPoolClient ) {
+  if ( data.UserPoolClient.SupportedIdentityProviders ) {
     providerList = data.UserPoolClient.SupportedIdentityProviders
   }
   providerList.push(samlProviderName)
 
   await cognitoUserPool.updateUserPoolClient({
-    ClientId: process.env.ADMIN_CLIENT_ID,
-    UserPoolId: process.env.ADMIN_POOL_ID,
+    ClientId: process.env.USER_CLIENT_ID,
+    UserPoolId: process.env.USER_POOL_ID,
     SupportedIdentityProviders: providerList,
   }).promise()
   return
