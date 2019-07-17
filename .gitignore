@@ -5,9 +5,12 @@ jspm_packages
 # Serverless directories
 .serverless
 
-config.yml
 privkey.pem
 
 #linter
 .eslintrc.json
 .webpack
+/test-flow/env.json
+
+config.yml
+config.yaml

@@ -77,7 +77,7 @@ describe('tenant admin should do what he could do', function () {
   it('create tenant', async () => {
     const data = await axios.post('admin/tenants?tenant=' + tenant_name_to_use)
     expect(data.status).to.be.equals(200)
-
+    await new Promise(resolve => setTimeout(resolve, 1000))
   })
 
   it('submit saml', async () => {
@@ -90,7 +90,7 @@ describe('tenant admin should do what he could do', function () {
         },
       })
     } catch (e) {
-      console.log(e.response)
+      console.log(e.response.data)
       throw e
     }
 
@@ -133,7 +133,7 @@ describe('tenant admin should do what he could do', function () {
         },
       })
     } catch (e) {
-      console.log(e.response)
+      console.log(e.response.data)
       throw e
     }
   })

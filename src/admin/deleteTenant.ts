@@ -1,8 +1,9 @@
-import {adminPoolDeleteTenantInfo, deleteCognitoProvider} from '@/cognito/cognitoAdminOperations'
+import {adminPoolDeleteTenantInfo, deleteCognitoProvider, validateOwnership} from '@/cognito/cognitoAdminOperations'
 import {
   deleteOwnedTenant, deleteSAMLInfo, deleteTenantOptionsInfo, deleteTenantRequiredInfo,
 } from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
+import {validateTenant} from '@/tenantNameRegex'
 
 export async function handler( event: any ) {
   console.log(event)
@@ -18,16 +19,21 @@ export async function handler( event: any ) {
     console.log('delete tenant in dynamodb failed: ' + e.message || JSON.stringify(e))
     return response(400, e.message || JSON.stringify(e))
   }
-  //todo: delete cognito item
+
+  let errors = []
   try {
-    await adminPoolDeleteTenantInfo(username, tenant)
-    await deleteSAMLInfo(tenant)
-    await deleteCognitoProvider(samlProviderName)
-    await deleteTenantRequiredInfo(tenant)
-    await deleteTenantOptionsInfo(tenant)
+    await Promise.all([
+      adminPoolDeleteTenantInfo(username, tenant),
+      deleteSAMLInfo(tenant),
+      deleteCognitoProvider(samlProviderName),
+      deleteTenantRequiredInfo(tenant),
+      deleteTenantOptionsInfo(tenant),
+    ])
   } catch (e) {
-    console.log('delete tenant in admin pool failed: ' + e.message || JSON.stringify(e))
-    return response(400, e.message || JSON.stringify(e))
+    errors.push(e.message || JSON.stringify(e))
+  }
+  if (errors.length > 0){
+    return response(400, 'delete fail with following errors: ' + JSON.stringify(errors))
   }
   return response(200)
 }
