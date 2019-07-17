@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "bash ./script/test.sh",
-    "test-flow": "mocha --require @babel/register --require @babel/polyfill -r tsconfig-paths/register test-flow/*.js",
+    "test-flow": "mocha -r ts-node/register -r tsconfig-paths/register test-flow/*.js",
     "post-deploy": "bash ./script/post-deploy.sh"
   },
   "devDependencies": {
