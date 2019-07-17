@@ -17,12 +17,13 @@ phases:
       - yarn
   pre_build:
     commands:
-      - export STAGE_NAME="test-$(date +%s)"
+      # Save the name length...
+      - export STAGE_NAME="test$(date +%s)"
       - export STACK_NAME="office-maker-accounts-${STAGE_NAME}"
-      - npx sls deploy -s ${STAGE_NAME}
-      - yarn post-deploy
   build:
     commands: |
+      npx sls deploy -s ${STAGE_NAME} && yarn post-deploy
+
       yarn test && yarn test-flow && \
       echo '*** Test succeeded ***'
 
