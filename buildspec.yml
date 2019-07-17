@@ -1,0 +1,39 @@
+version: 0.2
+
+env:
+  variables:
+    stage: 'stg'
+  parameter-store:
+    config_yml: 'office-maker-tenants-config-stg'
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - add-apt-repository ppa:rmescandon/yq -y && apt update && apt install -y yq
+      - echo "${config_yml}" >> config.yaml
+      - npm i -g yarn
+      - yarn --frozen-lockfile
+  pre_build:
+    commands:
+      # Save the name length...
+      - export STAGE_NAME="test$(date +%s)"
+  build:
+    commands: |
+      npx sls deploy -s ${STAGE_NAME} && yarn post-deploy
+      yarn test && \
+      echo '*** Test succeeded ***'
+      export BUILD_STATUS="$?"
+      if [ ${BUILD_STATUS} = 0 && "$CODEBUILD_WEBHOOK_TRIGGER" = "branch/release" ]; then
+        echo 'Deploying to staging environment......'
+        ./node_modules/.bin/sls deploy -s ${stage} && yarn post-deploy
+      fi
+  post_build:
+    commands:
+      - yarn remove
+      - npx sls remove -s ${STAGE_NAME} && exit ${BUILD_STATUS}
+
+cache:
+  paths:
+    - '~/.npm/**/*'
