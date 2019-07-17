@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2016 Red Hat, Inc. and/or its affiliates
+  ~ and other contributors as indicated by the @author tags.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<EntitiesDescriptor xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" Name="urn:keycloak"
+                    xmlns="urn:oasis:names:tc:SAML:2.0:metadata">
+    <EntityDescriptor entityID="https://dummy.location:8443/auth/realms/AWS-SAML">
+        <IDPSSODescriptor WantAuthnRequestsSigned="true"
+                          protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+            <KeyDescriptor use="signing">
+                <dsig:KeyInfo>
+                    <dsig:KeyName>j161fUwO8FNfbXAj5H8WQKAwRkgmwVo40jpWSF1hcqQ</dsig:KeyName>
+                    <dsig:X509Data>
+                        <dsig:X509Certificate>MIICnzCCAYcCBgFq3tKQujANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhBV1MtU0FNTDAeFw0xOTA1MjIwOTEzMjJaFw0yOTA1MjIwOTE1MDJaMBMxETAPBgNVBAMMCEFXUy1TQU1MMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArFZ9e2nQwiBKpfiFXH1jttU+7AqEMwn0+9rDPKJfW+u7kK8XV18Bz7qy2pcp8w+OOzU/qbQvVM7ULEn/Ek0niLux2KoEOR131n7rIbMnHk787zl0Vrl/pFXKKf5MSNbp9aNcn83b3Ke46l/JgJi14qd1DPRiBWg1m7fOqwRqgATSy8b6xpJim1B8plVnNabFYw0R18BwFb505eCjMMisT4SPOnUZS/7d3fV0PrX+GPywPc406h+nc8bGpMn6iBAOSGTEev3NFZMonULap6HG/9AvlJ9xR/K2H84vhrCMFaFT9CH5BbwTCSncgjOoJoaPOms5Mg7nVC6AVh4vRjNINQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQCS6QqhgZpmrSVwXm6PEjzlzP80HYjsCL/zY2o6EHEYmFSVqZr+rUFJpTf/QiCdDEt7eHZRQW4BYwgREwq3+Fv3iP0v4dwI2uGzYLUmugFRihLKhNe8zhvudAzxEUzor/cBvPwft7kNEzi4j74Nlv24r/h6QopzeZCqh5tKyi5GRdEsSm4fGY3OebpLvJ4HHJkxbW+VA/QFuEZDwqIAODch/Mb+gY0WydZsBXOAAPiIBhBEHMAeYKgY/Bky91n8aHrpuwdZ7MlW+HKs5GUVnNEKoJNnbPgD2WgmNVUopXrMZXYRDDoeQYQRBBYdOdGEkrWNTeBUF9ts6u5kdejegGpg</dsig:X509Certificate>
+                    </dsig:X509Data>
+                </dsig:KeyInfo>
+            </KeyDescriptor>
+
+            <SingleLogoutService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                    Location="https://dummy.location:8443/auth/realms/AWS-SAML/protocol/saml" />
+            <SingleLogoutService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                    Location="https://dummy.location:8443/auth/realms/AWS-SAML/protocol/saml" />
+            <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+            <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+            <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
+            <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
+            <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                                 Location="https://dummy.location:8443/auth/realms/AWS-SAML/protocol/saml" />
+            <SingleSignOnService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                    Location="https://dummy.location:8443/auth/realms/AWS-SAML/protocol/saml" />
+            <SingleSignOnService
+                    Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+                    Location="https://dummy.location:8443/auth/realms/AWS-SAML/protocol/saml" />
+        </IDPSSODescriptor>
+    </EntityDescriptor>
+</EntitiesDescriptor>
