@@ -8,12 +8,14 @@ import {validateTenant} from '@/tenantNameRegex'
 export async function handler (event: any) {
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
   const tenantName: string = event['queryStringParameters']['tenant']
-  const metadata: string | undefined = event['body']['metadata']
-  const metadataUrl: string | undefined = event['body']['metadataUrl']
-  const attributeMap: any = event['body']['attributeMap']
+  const body = JSON.parse(event['body'])
+  const metadata: string | undefined = body['metadata']
+  const metadataUrl: string | undefined = body['metadataUrl']
+  const attributeMap: any = body['attributeMap']
   const TENANT_SAML_NAME_PREFIX = process.env.TENANT_SAML_NAME_PREFIX
   const samlProviderName = TENANT_SAML_NAME_PREFIX + '.' + tenantName
-
+  console.log(event)
+  console.log('------------')
   try{
     //fast fail
     await Promise.all([
@@ -25,6 +27,7 @@ export async function handler (event: any) {
   }
 
   let providerDetails: ProviderDetails
+  console.log(`metadata: ${metadata}`)
   if (metadata){
     try{
       providerDetails = {

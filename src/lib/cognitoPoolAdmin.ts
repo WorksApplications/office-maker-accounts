@@ -119,7 +119,6 @@ export default class CognitoPoolAdmin {
           })
         },
         onFailure: function(err) {
-          console.log(err)
           reject(err)
         },
         newPasswordRequired: function(userAttributes, requiredAttributes) {

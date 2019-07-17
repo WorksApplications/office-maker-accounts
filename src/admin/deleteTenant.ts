@@ -1,5 +1,7 @@
 import {adminPoolDeleteTenantInfo, deleteCognitoProvider} from '@/cognito/cognitoAdminOperations'
-import {deleteOwnedTenant, deleteSAMLInfo, deleteTenantDetailInfo} from '@/db/dynamoAdminOperations'
+import {
+  deleteOwnedTenant, deleteSAMLInfo, deleteTenantOptionsInfo, deleteTenantRequiredInfo,
+} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 
 export async function handler( event: any ) {
@@ -21,7 +23,8 @@ export async function handler( event: any ) {
     await adminPoolDeleteTenantInfo(username, tenant)
     await deleteSAMLInfo(tenant)
     await deleteCognitoProvider(samlProviderName)
-    await deleteTenantDetailInfo(tenant)
+    await deleteTenantRequiredInfo(tenant)
+    await deleteTenantOptionsInfo(tenant)
   } catch (e) {
     console.log('delete tenant in admin pool failed: ' + e.message || JSON.stringify(e))
     return response(400, e.message || JSON.stringify(e))

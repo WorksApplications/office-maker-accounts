@@ -11,7 +11,7 @@ import {validateTenant} from '@/tenantNameRegex'
  */
 export async function handler( event: any){
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
-  const tenantName = event['queryStrFingParameters']['tenant']
+  const tenantName = event['queryStringParameters']['tenant']
 
   try{
     await validateTenant(tenantName)
@@ -19,7 +19,9 @@ export async function handler( event: any){
     return response(400, e.message)
   }
 
-  if ( ! userAbleToCreateTenant(userName)){
+  try {
+    await userAbleToCreateTenant(userName)
+  } catch (e) {
     return response(403, 'user cannot create tenant')
   }
 
@@ -28,6 +30,7 @@ export async function handler( event: any){
   } catch (e) {
     return response(409, 'tenant name already exists')
   }
+
   try{
     await cognitoAddTenantRecord(userName, tenantName)
     return response(200)

@@ -16,7 +16,7 @@ interface BodyParametersForOptions {
  */
 export async function handler( event: any ) {
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
-  const tenantName = event['pathParameters']['tenant']
+  const tenantName = event['pathParameters']['tenant_name']
 
   try {
     await validateOwnership(userName, tenantName)

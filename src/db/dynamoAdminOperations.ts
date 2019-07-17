@@ -203,12 +203,23 @@ export async function getTenantOptionsInfo( tenantName: string ): Promise<GetOpt
   }
 }
 
-export async function deleteTenantDetailInfo( tenantName: string ) {
+export async function deleteTenantRequiredInfo( tenantName: string ) {
   const params = {
     TableName: TB_TENANT.name,
     Key: {
       [TB_TENANT.TENANT]: {S: tenantName},
       [TB_TENANT.CATALOG]: {S: TB_TENANT.CATALOG_V_INFO},
+    },
+  }
+  return await dynamoDB.deleteItem(params).promise()
+}
+
+export async function deleteTenantOptionsInfo( tenantName: string ) {
+  const params = {
+    TableName: TB_TENANT.name,
+    Key: {
+      [TB_TENANT.TENANT]: {S: tenantName},
+      [TB_TENANT.CATALOG]: {S: TB_TENANT.CATALOG_V_LOGIN_RESTRICT},
     },
   }
   return await dynamoDB.deleteItem(params).promise()

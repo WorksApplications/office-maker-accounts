@@ -5,4 +5,5 @@ export const ADMIN_POOL = {
 
 export const USER_POOL = {
   ATTR_GREEN_LOGIN_TIME: 'custom:green_login',
+  ATTR_ROLE: 'custom:role',
 }

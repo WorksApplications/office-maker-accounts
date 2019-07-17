@@ -9,6 +9,9 @@ export default function(statusCode: number, body?: string | object, headers?: ob
   let bodyValue = ''
   if (typeof body === 'string') bodyValue = body
   if (typeof body === 'object') bodyValue = JSON.stringify(body)
+  console.log('=-----------------------=')
+  console.log('Response body: ' + bodyValue)
+  console.log('=-----------------------=')
   if (typeof headers !== 'object') {
     return {
       statusCode: statusCode,

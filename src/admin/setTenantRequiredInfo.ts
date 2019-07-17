@@ -20,7 +20,7 @@ const WWW_BASE_URL = process.env.WWW_BASE_URL as string // default
  */
 export async function handler( event: any ) {
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
-  const tenantName = event['pathParameters']['tenant']
+  const tenantName = event['pathParameters']['tenant_name']
   let body
   try {
     body = JSON.parse(event['body'])

@@ -38,6 +38,16 @@ async function getTenantAttributeFromUser( username: string ) {
   return userAttributes.filter(item => item.Name === ADMIN_POOL.ATTR_NAME_TENANT).map(item => item.Value)
 }
 
+export async function getTenantList( username: string ) {
+  const tenantNames = await getTenantAttributeFromUser(username)
+  if ( tenantNames.length === 0 ) {
+    return []
+  }
+  if ( tenantNames.length === 1 ) {
+    return tenantNames[0].split(',')
+  }
+  throw new Error('Unexcept attribute number: ' + tenantNames.length)
+}
 export async function adminPoolAddTenantInfo( user: string, tenants: string ) {
   //tenant is a comma separated string in the future
   return await cognitoUserPool.adminUpdateUserAttributes({

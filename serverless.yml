@@ -59,7 +59,7 @@ functions:
     warmup: prod
     handler: src/admin/registerTenant.handler
     name: ${self:service}-${self:provider.stage}-createTenant
-    role: !GetAtt APICreateTenantLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
     events: # POST tenants/tenant=<tenant>
       - http:
           path: admin/tenants
@@ -78,7 +78,7 @@ functions:
           path: admin/tenants/{tenant_name}
           method: delete
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
 
   checkTenant:
     warmup: prod
@@ -89,7 +89,18 @@ functions:
           path: admin/tenants/{tenant_name}
           method: head
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
+
+  getTenants:
+    warmup: prod
+    handler: src/admin/getTenants.handler
+    name: ${self:service}-${self:provider.stage}-getTenants
+    events:
+      - http:
+          path: admin/tenants
+          method: get
+          <<: *cognitoAdminAuthorizer
+    role: !GetAtt AllPermissionRole.Arn
 
 
   setTenantOptionsInfo:
@@ -97,11 +108,18 @@ functions:
     handler: src/admin/setTenantOptionsInfo.handler
     name: ${self:service}-${self:provider.stage}-setTenantOptions
     events: # post admin/tenants/{tenant}/info/options
+      #     body{
+      #      enableLoginFree: string | boolean
+      #      loginFreeIPs: string[] | undefined
+      #      enableLoginRestrict: string | boolean
+      #      loginRestrictIPs: string[] | undefined
+      #      bufferTime: string
+      #    }
       - http:
-          path: admin/tenants/{tenant}/info/options
+          path: admin/tenants/{tenant_name}/info/options
           method: post
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
     environment:
       DEFAULT_LOGIN_BUFFER_TIME: '1800'
 
@@ -116,10 +134,10 @@ functions:
       #      redirectUrl?: string | undefined
       # }   if undefined, will use default value   json
       - http:
-          path: admin/tenants/{tenant}/info/required
+          path: admin/tenants/{tenant_name}/info/required
           method: post
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDTenantDBLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
     environment:
       WWW_BASE_URL: ${file(./config.yaml):WWW_BASE_URL}
 
@@ -127,13 +145,13 @@ functions:
   worksmapSAMLInfo:
     warmup: prod
     handler: src/admin/worksmapSAMLInfo.handler
-    name: ${self:service}-{self:provider.stage}-worksmapSAMLInfo
+    name: ${self:service}-${self:provider.stage}-worksmapSAMLInfo
     events:
       - http:
           path: admin/client-info
           method: get
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APILambdaBasicRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
 
   registerSAMLProvider:
     warmup: prod
@@ -141,10 +159,10 @@ functions:
     name: ${self:service}-${self:provider.stage}-addSAMLProvider
     events: # POST saml-providers/tenant=<tenant> body {metadata | metadataUrl }
       - http:
-          path: admin/providers/
+          path: admin/providers
           method: post
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
 
   updateSAMLProvider:
     warmup: prod
@@ -155,7 +173,7 @@ functions:
           path: admin/providers/{tenant}
           method: post
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
 
   deleteSAMLProvider:
     warmup: prod
@@ -166,7 +184,7 @@ functions:
           path: admin/providers/{tenant}
           method: delete
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
 
   getSAMLProvider:
     warmup: prod
@@ -177,7 +195,7 @@ functions:
           path: admin/providers/{tenant}
           method: get
           <<: *cognitoAdminAuthorizer
-    role: !GetAtt APICRUDSAMLProviderLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
 
 
   userLogin:
@@ -188,7 +206,7 @@ functions:
       - http:
           path: login/
           method: get
-    role: !GetAtt APIUserLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
       COGNITO_REGION: ${self:provider.region}
@@ -202,8 +220,8 @@ functions:
     events: # get /login/refresh?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
       - http:
           path: login/refresh/
-          metho: get
-    role: !GetAtt APIUserLambdaRole.Arn
+          method: get
+    role: !GetAtt AllPermissionRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
       COGNITO_REGION: ${self:provider.region}
@@ -219,7 +237,7 @@ functions:
       - http:
           path: saml/login/callback
           method: get
-    role: !GetAtt APIUserLambdaRole.Arn
+    role: !GetAtt AllPermissionRole.Arn
     environment:
       publicKey: ${self:custom.publicKey}
       privateKey: ${self:custom.privateKey}

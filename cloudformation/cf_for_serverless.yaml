@@ -35,9 +35,10 @@ Resources:
       Schema:
         - AttributeDataType: String
           Mutable: true
-          Name: tenant
-          StringAttributeConstraints:
-            MaxLength: "14"
+          Name: green_login
+        - AttributeDataType: String
+          Mutable: true
+          Name: role
   CognitoUserPoolClientForUser:
     Type: AWS::Cognito::UserPoolClient
     Properties:
@@ -78,8 +79,6 @@ Resources:
           AttributeType: "S"
         - AttributeName: "Role"
           AttributeType: "S"
-        - AttributeName: "TTL"
-          AttributeType: "N"
       KeySchema:
         - AttributeName: "TenantUser"
           KeyType: "HASH"
@@ -138,6 +137,23 @@ Resources:
             Resource: !GetAtt TenantInfoDynamoDB.Arn
       ManagedPolicyName: ${self:service}-allow-read-tenant_table-${self:provider.stage}-policy
 
+  AllowCRUDCognitoAdminPoolPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cognito-idp:AdminUpdateUserAttributes"
+              - "cognito-idp:DeleteIdentityProvider"
+              - "cognito-idp:DeleteUserAttributes"
+              - "cognito-idp:UpdateUserAttributes"
+              - "cognito-idp:UpdateIdentityProvider"
+              - "cognito-idp:AdminGetUser"
+            Resource: !GetAtt CognitoUserPoolForTenant.Arn
+      ManagedPolicyName: ${self:service}-crud-admin-pool-${self:provider.stage}-policy
+
   AllowUpdateCognitoAdminPoolPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -145,10 +161,24 @@ Resources:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
-            Action: "cognito-idp:AdminUpdateUserAttributes"
+            Action:
+              - "cognito-idp:AdminUpdateUserAttributes"
+              - "cognito-idp:AdminGetUser"
             Resource: !GetAtt CognitoUserPoolForTenant.Arn
       ManagedPolicyName: ${self:service}-update-admin-pool-${self:provider.stage}-policy
 
+
+  AllowReadCognitoAdminPoolPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cognito-idp:AdminGetUser"
+            Resource: !GetAtt CognitoUserPoolForTenant.Arn
+      ManagedPolicyName: ${self:service}-read-admin-pool-${self:provider.stage}-policy
 
   AllowAsyncInvokePolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -175,6 +205,7 @@ Resources:
               - "iam:CreateSAMLProvider"
               - "iam:GetSAMLProvider"
               - "iam:UpdateSAMLProvider"
+              - "iam:DeleteSAMLProvider"
             Resource:
               !Join
               - ":"
@@ -187,7 +218,7 @@ Resources:
       ManagedPolicyName: ${self:service}-allow-crud-saml-provider-${self:provider.stage}-policy
 
 
-  APICreateTenantLambdaRole:
+  APICRUDTenantDBLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       <<: &commonForLambdaRole
@@ -202,17 +233,9 @@ Resources:
       ManagedPolicyArns:
         - !Ref LambdaDefaultPolicy
         - !Ref AllowCrudTenantDynamodbPolicy
-        - !Ref AllowUpdateCognitoAdminPoolPolicy
-      RoleName: ${self:service}-create-tenant-${self:provider.stage}-lmbd-role
+        - !Ref AllowCRUDCognitoAdminPoolPolicy
+      RoleName: ${self:service}-crud-tenant-${self:provider.stage}-lmbd-role
 
-  APICRUDTenantDBLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      <<: *commonForLambdaRole
-      ManagedPolicyArns:
-        - !Ref LambdaDefaultPolicy
-        - !Ref AllowCrudTenantDynamodbPolicy
-      RoleName: ${self:service}-crud-tenant-db-${self:provider.stage}-lmbd-role
 
   APICRUDSAMLProviderLambdaRole:
     Type: AWS::IAM::Role
@@ -221,6 +244,7 @@ Resources:
       ManagedPolicyArns:
         - !Ref LambdaDefaultPolicy
         - !Ref AllowCrudSAMLProviderPolicy
+        - !Ref AllowCRUDCognitoAdminPoolPolicy
       RoleName: ${self:service}-crud-saml-provider-${self:provider.stage}-lmbd-role
 
   APIUserLambdaRole:
@@ -231,6 +255,17 @@ Resources:
         - !Ref LambdaDefaultPolicy
         - !Ref AllowReadTenantDynamodbPolicy
       RoleName: ${self:service}-basic-${self:provider.stage}-user-lmbd-role
+
+  AllPermissionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      <<: *commonForLambdaRole
+      ManagedPolicyArns:
+        - !Ref LambdaDefaultPolicy
+        - !Ref AllowCrudSAMLProviderPolicy
+        - !Ref AllowCRUDCognitoAdminPoolPolicy
+        - !Ref AllowCrudTenantDynamodbPolicy
+      RoleName: ${self:service}-all-permissoin-${self:provider.stage}-lmbd-role
 
   APILambdaBasicRole:
     Type: AWS::IAM::Role
