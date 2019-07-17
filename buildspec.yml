@@ -14,7 +14,7 @@ phases:
       - add-apt-repository ppa:rmescandon/yq -y && apt update && apt install -y yq
       - echo "${config_yml}" >> config.yaml
       - npm i -g yarn
-      - yarn
+      - yarn --frozen-lockfile
   pre_build:
     commands:
       # Save the name length...
