@@ -59,7 +59,7 @@ describe('tenant admin should do what he could do', function () {
       const data = await axios.get('admin/tenants')
       expect(data.status, 'status matches').to.be.equals(200)
     } catch (e) {
-      console.log(e.response)
+      console.log(e.response.data)
       throw e
     }
   })
@@ -68,7 +68,7 @@ describe('tenant admin should do what he could do', function () {
       const data = await axios.head('admin/tenants/' + tenant_name_to_use)
       expect(data.status, 'status matches').to.be.equals(200)
     } catch (e) {
-      console.log(e.response)
+      console.log(e.response.data)
       throw e
     }
 

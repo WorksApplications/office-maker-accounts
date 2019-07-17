@@ -22,6 +22,8 @@ COGNITO_CLIENT_ADMIN="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select
 COGNITO_POOL_USER="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapUsersUserPool").OutputValue' -r)"
 COGNITO_CLIENT_USER="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapUsersPoolClient").OutputValue' -r)"
 ENDPOINT="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "ServiceEndpoint").OutputValue' -r)"
+DB_TENANT_NAME="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapTenantDB").OutputValue' -r)"
+DB_USER_PRI_NAME="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapUserPriDB").OutputValue' -r)"
 
 TEST_USERNAME="test_admin@example.com"
 TEMPORARY_PASSWORD="Test123-Test"
@@ -33,13 +35,13 @@ if ! [[ ${STAGE} =~ prod|production ]]; then
 fi
 
 echo "{
-  \"TEST_USERNAME\": \"test_admin@example.com\",
-  \"TEMPORARY_PASSWORD\": \"Test123-Test\",
+  \"TEST_USERNAME\": \"${TEST_USERNAME}\",
+  \"TEMPORARY_PASSWORD\": \"${TEMPORARY_PASSWORD}\",
   \"COGNITO_POOL_ADMIN\": \"${COGNITO_POOL_ADMIN}\",
   \"COGNITO_CLIENT_ADMIN\": \"${COGNITO_CLIENT_ADMIN}\",
-  \"ENDPOINT\": \"https://worksmap.test.app.sixleaveakkm.com/api/\",
-  \"DB_TENANT_NAME\": \"office-maker-tenants-dev-table\",
-  \"DB_USER_PRI_NAME\": \"office-maker-tenants-dev-userPrivilegeTable\"
+  \"ENDPOINT\": \"${ENDPOINT}\",
+  \"DB_TENANT_NAME\": \"${DB_TENANT_NAME}\",
+  \"DB_USER_PRI_NAME\": \"${DB_USER_PRI_NAME}\"
 }" > ../test-flow/env.json
 
 if ! [[ ${STAGE} =~ prod|production ]]; then

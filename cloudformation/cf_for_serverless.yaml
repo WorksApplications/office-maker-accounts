@@ -322,3 +322,9 @@ Outputs:
   WorksmapUsersPoolClient:
     Description: user pool client id of users pool
     Value: !Ref CognitoUserPoolClientForUser
+  WorksmapTenantDB:
+    Description: worksmap tenant db name
+    Value: !Ref TenantInfoDynamoDB
+  WorksmapUserPriDB:
+    Description: worksmap user privilege db name
+    Value: !Ref UserPrivilegeDynamoDB
