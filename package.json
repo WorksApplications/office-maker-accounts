@@ -15,7 +15,7 @@
     "test": "bash ./script/test.sh",
     "test-flow": "mocha -r ts-node/register -r tsconfig-paths/register ./test-flow/*.ts",
     "post-deploy": "bash ./script/post-deploy.sh",
-    "remove": "bash ./script/pre-remove.sh"
+    "pre-remove": "bash ./script/pre-remove.sh"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",

@@ -31,7 +31,7 @@ phases:
       fi
   post_build:
     commands:
-      - yarn remove
+      - yarn pre-remove
       - npx sls remove -s ${STAGE_NAME} && exit ${BUILD_STATUS}
 
 cache:
