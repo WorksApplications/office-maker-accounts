@@ -43,5 +43,5 @@ echo "{
 }" > ../test-flow/env.json
 
 if ! [[ ${STAGE} =~ prod|production ]]; then
-	../node_modules/.bin/mocha -r ts-node/register -r tsconfig-paths/register "./test-flow/*.ts"
+	../node_modules/.bin/mocha -r ts-node/register -r tsconfig-paths/register "../test-flow/*.ts"
 fi
