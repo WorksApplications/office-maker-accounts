@@ -1,6 +1,7 @@
 import {isTenantNameAvailable} from '@/db/dynamoAdminOperations'
 import response from '@/lambdaResponse'
 
+// dynamodb getItem
 export const handler = async ( event: any) => {
   console.log(event)
   if (await ableToUseTenantName(event['pathParameters']['tenant_name'])){

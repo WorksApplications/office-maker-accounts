@@ -1,5 +1,5 @@
-import {validateOwnership} from '@/cognito/cognitoAdminOperations'
-import {addTenantRequiredInfo} from '@/db/dynamoAdminOperations'
+import {validateOwnership} from '@/cognito/cognitoAdminOperations' // cognito adminGetUser
+import {addTenantRequiredInfo} from '@/db/dynamoAdminOperations'   //dynamo putItem
 import {getTenantBaseUrl} from '@/generateUrl'
 import response from '@/lambdaResponse'
 

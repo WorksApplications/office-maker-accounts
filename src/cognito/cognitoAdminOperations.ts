@@ -9,6 +9,7 @@ interface UserAttributeStruct {
   Value: string
 }
 
+// cognito adminGetUser
 export async function validateOwnership( username: string, tenant: string ) {
   const tenantNames = await getTenantAttributeFromUser(username)
   if ( tenantNames.length === 1 && tenantNames[0] === tenant ) {
@@ -18,6 +19,7 @@ export async function validateOwnership( username: string, tenant: string ) {
 }
 
 /**
+ * // cognito adminGetUser
  * simple judge whether user is able to create tenant
  * currently, one user could only own one tenant
  * tenant could be owned by multiple users added through original user
@@ -29,6 +31,7 @@ export async function userAbleToCreateTenant( username: string ) {
   throw new Error(`user already own a tenant: ${tenantNames[0]}`)
 }
 
+// cognito adminGetUser
 async function getTenantAttributeFromUser( username: string ) {
   const data = await cognitoUserPool.adminGetUser({
     Username: username,
@@ -38,6 +41,7 @@ async function getTenantAttributeFromUser( username: string ) {
   return userAttributes.filter(item => item.Name === ADMIN_POOL.ATTR_NAME_TENANT).map(item => item.Value)
 }
 
+// cognito adminGetUser
 export async function getTenantList( username: string ) {
   const tenantNames = await getTenantAttributeFromUser(username)
   if ( tenantNames.length === 0 ) {
@@ -48,6 +52,8 @@ export async function getTenantList( username: string ) {
   }
   throw new Error('Unexcept attribute number: ' + tenantNames.length)
 }
+
+//congito adminUpdateUserAttributes
 export async function adminPoolAddTenantInfo( user: string, tenants: string ) {
   //tenant is a comma separated string in the future
   return await cognitoUserPool.adminUpdateUserAttributes({

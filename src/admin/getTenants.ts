@@ -1,6 +1,7 @@
 import {getTenantList} from '@/cognito/cognitoAdminOperations'
 import response from '@/lambdaResponse'
 
+// cognito adminGetUser
 export const handler = async ( event: any ) => {
   console.log(event)
 

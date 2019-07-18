@@ -28,7 +28,7 @@ export async function isTenantNameAvailable( name: string ) {
 }
 
 /**
- *
+ *  //dynamo putItem
  * @param username
  * @param tenantName
  * @return {Promise<''>} don't care about the result
@@ -141,6 +141,7 @@ export async function queryTenantInfo( tenantName: string ) {
   }
 }
 
+//dynamo putItem
 export async function addTenantRequiredInfo( tenantName: string, jwtExpireTime: string, stateExpireTime: string, redirectUrl: string ) {
   const params = {
     TableName: TB_TENANT.name,

@@ -1,5 +1,5 @@
 import {validateOwnership} from '@/cognito/cognitoAdminOperations'
-import {setTenantOptionsInfo} from '@/db/dynamoAdminOperations'
+import {setTenantOptionsInfo} from '@/db/dynamoAdminOperations'  //dynamo putItem
 import response from '@/lambdaResponse'
 
 interface BodyParametersForOptions {
@@ -37,7 +37,10 @@ export async function handler( event: any ) {
   let enableLoginRestrict: boolean = false
   let loginRestrictIPs: string[] = []
   let bufferTime: string = process.env.DEFAULT_LOGIN_BUFFER_TIME as string
-  if ( body['enableLoginFree'] && (body['enableLoginFree'] === 'true' || body['enableLoginFree'] === true) ) {
+
+  if ( body['enableLoginFree'] && body['enableLoginFree'] !== 'false' ) {
+    //body['enableLoginFree'] && (body['enableLoginFree'] === 'true' || body['enableLoginFree'] === true)
+    // ['enable'] exist and value is 'true' or true
     enableLoginFree = true
     if ( !body['loginFreeIPs'] ) {
       return response(400, 'login free IPs is not provided while login free is enabled')

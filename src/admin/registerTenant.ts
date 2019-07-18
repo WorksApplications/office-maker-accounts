@@ -1,7 +1,7 @@
 import {
-  adminPoolAddTenantInfo as cognitoAddTenantRecord, userAbleToCreateTenant,
+  adminPoolAddTenantInfo as cognitoAddTenantRecord, userAbleToCreateTenant, // cognito adminGetUser //congito adminUpdateUserAttributes
 } from '@/cognito/cognitoAdminOperations'
-import {promiseToCreateTenant as dbAddRecordIfAble} from '@/db/dynamoAdminOperations'
+import {promiseToCreateTenant as dbAddRecordIfAble} from '@/db/dynamoAdminOperations' //dynamodb putItem
 import response from '@/lambdaResponse'
 import {validateTenant} from '@/tenantNameRegex'
 

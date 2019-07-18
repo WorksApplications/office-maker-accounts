@@ -28,7 +28,7 @@ process.env.DB_USER_PRI_NAME = process.env.DB_USER_PRI_NAME ? process.env.DB_USE
 let newPassword = 'TestTest123-'
 let metadata = fs.readFileSync(path.resolve(__dirname, './idp-metadata.xml'), 'utf8')
 
-let accessToken = 'eyJraWQiOiJlR3NPU0FuQ0xYcmJDTDA1YWdzVElQM3pcL2themc2RlIxZ05iVzZJYjc0VT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJkY2UzYjUwYS02NDU2LTQ0NzItYmZhNy0xZmMxNjY1ODRkOGQiLCJhdWQiOiI1dDk5Ym45cTR0YzkwOHR1NXI3NzU0c2FsMyIsImV2ZW50X2lkIjoiNzJjYTQwZDUtZTBiNS00ZjhkLThiNDYtYzk4YzQ5NTcwNmNiIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE1NjMzMzgzNzUsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMS5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMV8zRXZhdXk4bG0iLCJjdXN0b206dGVuYW50IjoiZXhhbXBsZSIsImNvZ25pdG86dXNlcm5hbWUiOiJkY2UzYjUwYS02NDU2LTQ0NzItYmZhNy0xZmMxNjY1ODRkOGQiLCJleHAiOjE1NjMzNDE5NzUsImlhdCI6MTU2MzMzODM3NSwiZW1haWwiOiJ0ZXN0X2FkbWluQGV4YW1wbGUuY29tIn0.fCnUYiLQyEMK77saMEqCnXN4DnLfrsp-g9P1MabZUER9TfBghwNU-R3GqBjqdenx2OblRRoLF--GNW64QOTBJSXla2zLcID_BCl9avS2rVkgnpmP2T5Ekt68VhRHHrRZ-tJnLHSjh73dZi9_eQ8y1KDlAQMRxwBM0s1pMmsQ99Zn-yNCksGZeYJy1P8eGNpSqktLeOxDeLzsYK2FjiIvkFrmoi7MdGntOtEEz3qmaGaL9R_Xm89exl9T79T3T4v2n8_F8WQjGovUCCxp2EvzFTzDwmGCC007LWxd_ddDAzX8psseS2zmyFfgwtppzFHhgx4VwCV3oIBhVMf3faD10A'
+let accessToken = 'eyJraWQiOiJaZGprTzBpMDBMeVZcL0hjdHVhV2xjKzQyQ1dqUjlYaXEzc0ZnalFTbDhRTT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyOTBmY2M5YS04ZmQ1LTQ4MDgtYjZjNS01YzJmNDY5OGU1MGMiLCJhdWQiOiIybms0bWI1MTV0a3RtMGZoNXExbGhhbDJnNiIsImV2ZW50X2lkIjoiYmEzNDRhNTktMThkOC00NThlLWE1ZjgtYTNjYjc0ZTgzZWRlIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE1NjM0MzgzOTEsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMS5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMV9oNElDdmdrNUgiLCJjb2duaXRvOnVzZXJuYW1lIjoiMjkwZmNjOWEtOGZkNS00ODA4LWI2YzUtNWMyZjQ2OThlNTBjIiwiZXhwIjoxNTYzNDQxOTkxLCJpYXQiOjE1NjM0MzgzOTEsImVtYWlsIjoidGVzdF9hZG1pbkBleGFtcGxlLmNvbSJ9.0k22eUbE4PwNva1p-IdcgrSjJacupYev2fkOjgXVnP6q1krVmwI6p7_XKi6Iw91W0WQl88Sb_ZSlndzZeciHM3X-cjSF4SbS8wklSsiZLIUeqy_xD_yUhBxPfKKOOWYENtNvbGPGTuwTkzYihMfAVgfqPCpQdUF0-Htk7MEaDeFVbdQT4NjvLOs975QPUsXFiwdcDmWiGFmGIKdaEUAQ25S5tFVXSJjl2DKKPYS0rJH-Ieh7_Kaz_DLLhFs8uS3C3DIGs6x_oFCR6kQBo7wHUBe89EexxZ8mDSu_dtkgZcG9cBvvv-isZpPsSOqg0ADvX8scBfGoXJ710awmELLq2w'
 let authSuccess = false
 
 let axios: AxiosInstance
@@ -39,9 +39,9 @@ describe('tenant admin should do what he could do', function () {
 
   before(async () => {
     try {
-      const data = await signIn(COGNITO_POOL_ADMIN, COGNITO_CLIENT_ADMIN, username, password, newPassword)
-      accessToken = data.getIdToken().getJwtToken()
-      console.log(accessToken)
+      // const data = await signIn(COGNITO_POOL_ADMIN, COGNITO_CLIENT_ADMIN, username, password, newPassword)
+      // accessToken = data.getIdToken().getJwtToken()
+      // console.log(accessToken)
       axios = Axios.create({
         baseURL: ENDPOINT,
         headers: {'Authorization': 'Bearer ' + accessToken},
@@ -55,13 +55,15 @@ describe('tenant admin should do what he could do', function () {
 
   const tenant_name_to_use = 'example'
   it('get tenant', async () => {
+    let data
     try {
-      const data = await axios.get('admin/tenants')
-      expect(data.status, 'status matches').to.be.equals(200)
+      data = await axios.get('admin/tenants')
     } catch (e) {
       console.log(e.response.data)
       throw e
     }
+    expect(data.status, 'status matches').to.be.equals(200)
+    expect(data.data, 'data matches nothing').to.be.deep.equals([])
   })
   it('check tenant', async () => {
     try {
@@ -71,13 +73,41 @@ describe('tenant admin should do what he could do', function () {
       console.log(e.response.data)
       throw e
     }
-
   })
 
   it('create tenant', async () => {
     const data = await axios.post('admin/tenants?tenant=' + tenant_name_to_use)
     expect(data.status).to.be.equals(200)
     await new Promise(resolve => setTimeout(resolve, 1000))
+  })
+
+  it('create another tenant reject', async () => {
+    try {
+      await axios.post('admin/tenants?tenant=' + 'some-other-tenant')
+    } catch (e){
+      expect(e.response.status).to.be.equals(403)
+      expect(e.response.data).to.be.equals('user cannot create tenant')
+    }
+  })
+
+  it('get updated tenant', async () => {
+    let data
+    try {
+      data = await axios.get('admin/tenants')
+    } catch (e) {
+      console.log(e.response.data)
+      throw e
+    }
+    expect(data.status, 'status matches').to.be.equals(200)
+    expect(data.data, 'data matches nothing').to.be.deep.equals(['example'])
+
+  })
+  it('check tenant should be unable', async () => {
+    try {
+      await axios.head('admin/tenants/' + tenant_name_to_use)
+    } catch (e) {
+      expect(e.response.status).to.be.equals(400)
+    }
   })
 
   it('submit saml', async () => {
@@ -93,8 +123,9 @@ describe('tenant admin should do what he could do', function () {
       console.log(e.response.data)
       throw e
     }
-
   })
+
+
 
   it('get saml', async () => {
     const data = await axios.get(`admin/providers/${tenant_name_to_use}`)
@@ -174,7 +205,6 @@ describe('tenant admin should do what he could do', function () {
     }
   })
 
-
   it('try delete tenant', async () => {
     try {
       const data = await axios.delete('admin/tenants/' + tenant_name_to_use)
@@ -184,6 +214,7 @@ describe('tenant admin should do what he could do', function () {
       throw e
     }
   })
+
 })
 
 
