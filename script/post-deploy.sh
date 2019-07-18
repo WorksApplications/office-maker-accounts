@@ -15,7 +15,7 @@ STAGE="$(cat ${SLS_FILE} | jq .service.provider.stage -r)"
 SERVICE="$(cat ${SLS_FILE} | jq .service.service -r)"
 STACK_NAME="$SERVICE-$STAGE"
 
-stack_output="$(aws cloudformation describe-stacks --stack-name ${STACK_NAME})"
+stack_output="$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --output json)"
 
 COGNITO_POOL_ADMIN="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapAdminUserPool").OutputValue' -r)"
 COGNITO_CLIENT_ADMIN="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapAdminPoolClient").OutputValue' -r)"
@@ -53,6 +53,6 @@ else
 	# update oauth parameters
 	aws cognito-idp update-user-pool-client --user-pool-id "$COGNITO_POOL_USER" \
 		--client-id "$COGNITO_CLIENT_USER" --allowed-o-auth-flows "code" \
-		--allowed-o-auth-scopes "email" "openid" "aws.cognito.signin.user.admin" "phone" \
+		--allowed-o-auth-scopes "email" "openid" "aws.cognito.signin.user.admin" "phone" "profile"\
 		--callback-urls "[\"${cognito_user_client_callback_url}\"]"
 fi

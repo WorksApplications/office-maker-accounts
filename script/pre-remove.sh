@@ -15,7 +15,7 @@ STAGE="$(cat ${SLS_FILE} | jq .service.provider.stage -r)"
 SERVICE="$(cat ${SLS_FILE} | jq .service.service -r)"
 STACK_NAME="$SERVICE-$STAGE"
 
-stack_output="$(aws cloudformation describe-stacks --stack-name ${STACK_NAME})"
+stack_output="$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --output json)"
 
 COGNITO_POOL_ADMIN="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapAdminUserPool").OutputValue' -r)"
 COGNITO_CLIENT_ADMIN="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey == "WorksmapAdminPoolClient").OutputValue' -r)"
