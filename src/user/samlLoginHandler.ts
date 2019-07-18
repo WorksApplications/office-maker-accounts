@@ -22,15 +22,15 @@ const cognitoDomain = 'https://' + COGNITO_DOMAIN + '.auth.' + COGNITO_REGION + 
 
 export async function handler( event: any ) {
   console.log(event)
-  const code: string | undefined = event['queryStringParameters']['code']
+  const code: string = event['queryStringParameters']['code']
   if ( typeof code === 'undefined' ) return response(400, 'Authorization Code not found')
-
   const cookieStr = event.headers['cookie']
   if ( typeof cookieStr === 'undefined' ) {
-    const cookies = cookie.parse(cookieStr)
-    if ( !cookies['session_id'] )
-      return response(400, 'Necessary cookie session_id is not found')
+    return response(400, 'Necessary cookie session_id is not found')
   }
+  const cookies = cookie.parse(cookieStr)
+  if ( !cookies['session_id'] )
+    return response(400, 'Necessary cookie session_id is not found')
 
   const sessionId = cookie.parse(cookieStr)['session_id']
 
