@@ -30,7 +30,10 @@ export async function handler( event: any ) {
       deleteTenantOptionsInfo(tenant),
     ])
   } catch (e) {
-    errors.push(e.message || JSON.stringify(e))
+    //ignore not exist errors
+    if (!e.message.includes('not exist')) {
+      errors.push(e.message || JSON.stringify(e))
+    }
   }
   if (errors.length > 0){
     return response(400, 'delete fail with following errors: ' + JSON.stringify(errors))
