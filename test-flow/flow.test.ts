@@ -125,7 +125,20 @@ describe('tenant admin should do what he could do', function () {
     }
   })
 
-
+  it('submit saml again should be reject', async ()=>{
+    try{
+      const data = await axios.post(`admin/providers?tenant=${tenant_name_to_use}`, {
+        metadata: metadata,
+        attributeMap: {
+          'email': 'email',
+          'custom:role': 'roles'
+        }
+      })
+    } catch (e) {
+      console.log(e.response.data)
+      expect(e.response.status).to.be.equals(400)
+    }
+  })
 
   it('get saml', async () => {
     const data = await axios.get(`admin/providers/${tenant_name_to_use}`)
@@ -214,7 +227,6 @@ describe('tenant admin should do what he could do', function () {
       throw e
     }
   })
-
 })
 
 
