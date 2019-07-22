@@ -39,6 +39,7 @@ provider:
     BASE_URL: ${file(config.yaml):API_BASE_URL}
     TENANT_SAML_NAME_PREFIX: ${self:custom.app}
     WWW_BASE_URL: ${file(config.yaml):WWW_BASE_URL}
+        # ↑ except parse www site address, also works in response to solve CORS
 
 custom:
   app: worksmap
@@ -207,16 +208,30 @@ functions:
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
+  userActionOptions:
+    warmup: prod
+    handler: src/user/options.header
+    name: ${self:service}-${self:provider.stage}-userActionOptions
+    events:
+      - http:
+          path: login/
+          method: options
+      - http:
+          path: login/refresh/
+          method: options
+      - http:
+          path: saml/login/callback
+          method: options
+    role: !GetAtt AllPermissionRole.Arn
 
   userLogin:
-    warnup: prod
+    warmup: prod
     handler: src/user/userLogin.handler
     name: ${self:service}-${self:provider.stage}-userLogin
     events: # get /login?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
       - http:
           path: login/
           method: get
-          cors: true
     role: !GetAtt AllPermissionRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
@@ -225,14 +240,13 @@ functions:
       privateKey: ${self:custom.privateKey}
 
   userLoginRefresh:
-    warnup: prod
+    warmup: prod
     handler: src/user/loginRefresh.handler
     name: ${self:service}-${self:provider.stage}-userLoginRefresh
     events: # get /login/refresh?tenant=<tenant>&method=<saml|guest|...>&state=<redirect_url>
       - http:
           path: login/refresh/
           method: get
-          cors: true
     role: !GetAtt AllPermissionRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
