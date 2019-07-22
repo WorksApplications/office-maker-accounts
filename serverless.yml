@@ -38,6 +38,7 @@ provider:
     USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
     BASE_URL: ${file(config.yaml):API_BASE_URL}
     TENANT_SAML_NAME_PREFIX: ${self:custom.app}
+    WWW_BASE_URL: ${file(config.yaml):WWW_BASE_URL}
 
 custom:
   app: worksmap
@@ -65,6 +66,7 @@ functions:
       - http:
           path: admin/tenants
           method: post
+          cors: true
           <<: &cognitoAdminAuthorizer
             authorizer:
               type: COGNITO_USER_POOLS
@@ -78,6 +80,7 @@ functions:
       - http:
           path: admin/tenants/{tenant_name}
           method: delete
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -89,6 +92,7 @@ functions:
       - http:
           path: admin/tenants/{tenant_name}
           method: head
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -100,6 +104,7 @@ functions:
       - http:
           path: admin/tenants
           method: get
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -119,6 +124,7 @@ functions:
       - http:
           path: admin/tenants/{tenant_name}/info/options
           method: post
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
     environment:
@@ -137,11 +143,9 @@ functions:
       - http:
           path: admin/tenants/{tenant_name}/info/required
           method: post
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
-    environment:
-      WWW_BASE_URL: ${file(./config.yaml):WWW_BASE_URL}
-
 
   worksmapSAMLInfo:
     warmup: prod
@@ -151,6 +155,7 @@ functions:
       - http:
           path: admin/client-info
           method: get
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -162,6 +167,7 @@ functions:
       - http:
           path: admin/providers
           method: post
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -173,6 +179,7 @@ functions:
       - http:
           path: admin/providers/{tenant}
           method: post
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -184,6 +191,7 @@ functions:
       - http:
           path: admin/providers/{tenant}
           method: delete
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -195,6 +203,7 @@ functions:
       - http:
           path: admin/providers/{tenant}
           method: get
+          cors: true
           <<: *cognitoAdminAuthorizer
     role: !GetAtt AllPermissionRole.Arn
 
@@ -207,6 +216,7 @@ functions:
       - http:
           path: login/
           method: get
+          cors: true
     role: !GetAtt AllPermissionRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
@@ -222,6 +232,7 @@ functions:
       - http:
           path: login/refresh/
           method: get
+          cors: true
     role: !GetAtt AllPermissionRole.Arn
     environment:
       COGNITO_DOMAIN: ${file(config.yaml):COGNITO.USERS_USER_POOL_COGNITO_DOMAIN}
@@ -238,6 +249,7 @@ functions:
       - http:
           path: saml/login/callback
           method: get
+          cors: true
     role: !GetAtt AllPermissionRole.Arn
     environment:
       publicKey: ${self:custom.publicKey}

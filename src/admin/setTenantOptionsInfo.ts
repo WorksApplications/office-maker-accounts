@@ -22,14 +22,14 @@ export async function handler( event: any ) {
   try {
     await validateOwnership(userName, tenantName)
   } catch (e) {
-    return response(409, 'user don\'t owns the tenant')
+    return response(event['headers']['origin'], 409, 'user don\'t owns the tenant')
   }
 
   let body
   try {
     body = JSON.parse(event['body'])
   } catch (e) {
-    return response(400, 'API requires \'application/json\' style body')
+    return response(event['headers']['origin'], 400, 'API requires \'application/json\' style body')
   }
 
   let enableLoginFree: boolean = false
@@ -43,7 +43,7 @@ export async function handler( event: any ) {
     // ['enable'] exist and value is 'true' or true
     enableLoginFree = true
     if ( !body['loginFreeIPs'] ) {
-      return response(400, 'login free IPs is not provided while login free is enabled')
+      return response(event['headers']['origin'],400, 'login free IPs is not provided while login free is enabled')
     }
     loginFreeIPs = body['loginFreeIPs']
   }
@@ -51,12 +51,12 @@ export async function handler( event: any ) {
   if ( body['enableLoginRestrict'] && (body['enableLoginRestrict'] === 'true' || body['enableLoginRestrict'] === true) ) {
     enableLoginRestrict = true
     if ( !body['loginRestrictIPs'] ) {
-      return response(400, 'login restrict IPs is not provided while login restrict is enabled')
+      return response(event['headers']['origin'],400, 'login restrict IPs is not provided while login restrict is enabled')
     }
     loginRestrictIPs = body['loginRestrictIPs']
 
     if ( !body['bufferTime'] ) {
-      return response(400, 'login restrict IPs is not provided while login restrict is enabled')
+      return response(event['headers']['origin'],400, 'login restrict IPs is not provided while login restrict is enabled')
     }
     bufferTime = body['bufferTime']
   }
@@ -72,10 +72,10 @@ export async function handler( event: any ) {
 
   try {
     await setTenantOptionsInfo(tenantName, enableLoginFree, enableLoginRestrict, loginFreeIPs, loginRestrictIPs, bufferTime)
-    return response(200, JSON.stringify(bodyParameters))
+    return response(event['headers']['origin'],200, JSON.stringify(bodyParameters))
   } catch (e) {
     console.log(e)
-    return response(400, 'unexpected error when saving tenant info into cognito')
+    return response(event['headers']['origin'],400, 'unexpected error when saving tenant info into cognito')
   }
 }
 

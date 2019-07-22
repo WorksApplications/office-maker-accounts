@@ -7,6 +7,6 @@ export const handler = async ( event: any ) => {
 
   const userName = event['requestContext']['authorizer']['claims']['cognito:username']
   const list = await getTenantList(userName)
-  return response(200, JSON.stringify(list))
+  return response(event['headers']['origin'], 200, JSON.stringify(list))
 
 }

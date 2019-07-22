@@ -14,7 +14,7 @@ export async function handler( event: any ) {
       validateOwnership(userName, tenantName),
     ])
   } catch (e) {
-    return response(400, e.message)
+    return response(event['headers']['origin'], 400, e.message)
   }
 
   try {
@@ -29,8 +29,8 @@ export async function handler( event: any ) {
         'MetadataFile': data.IdentityProvider.ProviderDetails.MetadataFile
       }
     }
-    return response(200, body)
+    return response(event['headers']['origin'], 200, body)
   } catch (e) {
-    return response(500, e.message || JSON.stringify(e))
+    return response(event['headers']['origin'], 500, e.message || JSON.stringify(e))
   }
 }

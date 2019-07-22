@@ -18,7 +18,7 @@ export async function handler( event: any ) {
       validateOwnership(userName, tenantName),
     ])
   } catch (e) {
-    return response(400, e.message)
+    return response(event['headers']['origin'], 400, e.message)
   }
 
   let providerDetails: ProviderDetails
@@ -26,19 +26,19 @@ export async function handler( event: any ) {
     try {
       providerDetails = {'MetadataFile': metadata}
     } catch (e) {
-      return response(400, 'fail saving metadata')
+      return response(event['headers']['origin'], 400, 'fail saving metadata')
     }
   } else {
     if ( !metadataUrl ) {
-      return response(400, 'one of metadata and metadataUrl must be provided')
+      return response(event['headers']['origin'], 400, 'one of metadata and metadataUrl must be provided')
     }
     providerDetails = {'MetadataURL': metadataUrl}
   }
 
   try {
     await updateCognitoProvider(samlProviderName, providerDetails, attributeMap)
-    return response(200)
+    return response(event['headers']['origin'], 200)
   } catch (e) {
-    return response(500, 'fail update cognito provider: ' + e.message || JSON.stringify(e))
+    return response(event['headers']['origin'], 500, 'fail update cognito provider: ' + e.message || JSON.stringify(e))
   }
 }

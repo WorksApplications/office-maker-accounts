@@ -4,10 +4,11 @@ import response from '@/lambdaResponse'
 // dynamodb getItem
 export const handler = async ( event: any) => {
   console.log(event)
+
   if (await ableToUseTenantName(event['pathParameters']['tenant_name'])){
-    return response(200, 'able to use')
+    return response(event['headers']['origin'], 200, 'able to use')
   }
-  return response(400, 'unable to use')
+  return response(event['headers']['origin'],400, 'unable to use')
 }
 
 async function ableToUseTenantName( tenantName: string | undefined) {

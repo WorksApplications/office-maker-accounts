@@ -6,6 +6,6 @@ export async function handler( event: any ) {
   const body = JSON.parse(event['body'])
   const targetUser = body['targetUser']
   if ( typeof tenant === 'undefined' ) {
-    return response(400, 'cannot add user when not own tenant')
+    return response(event['headers']['origin'], 400, 'cannot add user when not own tenant')
   }
 }

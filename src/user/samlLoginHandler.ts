@@ -23,14 +23,14 @@ const cognitoDomain = 'https://' + COGNITO_DOMAIN + '.auth.' + COGNITO_REGION + 
 export async function handler( event: any ) {
   console.log(event)
   const code: string = event['queryStringParameters']['code']
-  if ( typeof code === 'undefined' ) return response(400, 'Authorization Code not found')
+  if ( typeof code === 'undefined' ) return response(event['headers']['origin'], 400, 'Authorization Code not found')
   const cookieStr = event.headers['cookie']
   if ( typeof cookieStr === 'undefined' ) {
-    return response(400, 'Necessary cookie session_id is not found')
+    return response(event['headers']['origin'], 400, 'Necessary cookie session_id is not found')
   }
   const cookies = cookie.parse(cookieStr)
   if ( !cookies['session_id'] )
-    return response(400, 'Necessary cookie session_id is not found')
+    return response(event['headers']['origin'], 400, 'Necessary cookie session_id is not found')
 
   const sessionId = cookie.parse(cookieStr)['session_id']
 
@@ -52,18 +52,14 @@ export async function handler( event: any ) {
 
     if ( userId ) {
       const jwt = await samlSign(tenant, ip, userId, role, jwtExpireLength)
-      return {
-        statusCode: 302,
-        headers: {
-          'Location': originState,
-          'Set-Cookie': 'jwt=' + JSON.stringify({accessToken: jwt}),
-        },
-        body: '',
-      }
+      return response(event['headers']['origin'], 302, '', {
+        'Location': originState,
+        'Set-Cookie': 'jwt=' + JSON.stringify({accessToken: jwt}),
+      })
     }
   } catch (e) {
     console.error(e)
-    return response(401, JSON.stringify(e.message))
+    return response(event['headers']['origin'], 401, JSON.stringify(e.message))
   }
 }
 

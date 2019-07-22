@@ -16,27 +16,27 @@ export async function handler( event: any){
   try{
     await validateTenant(tenantName)
   } catch (e) {
-    return response(400, e.message)
+    return response(event['headers']['origin'], 400, e.message)
   }
 
   try {
     await userAbleToCreateTenant(userName)
   } catch (e) {
-    return response(403, 'user cannot create tenant')
+    return response(event['headers']['origin'], 403, 'user cannot create tenant')
   }
 
   try{
     await dbAddRecordIfAble(userName,tenantName)
   } catch (e) {
-    return response(409, 'tenant name already exists')
+    return response(event['headers']['origin'], 409, 'tenant name already exists')
   }
 
   try{
     await cognitoAddTenantRecord(userName, tenantName)
-    return response(200)
+    return response(event['headers']['origin'], 200)
   } catch (e) {
     console.log(e)
-    return response(400, 'unexpected error when saving tenant info into cognito')
+    return response(event['headers']['origin'], 400, 'unexpected error when saving tenant info into cognito')
   }
 }
 

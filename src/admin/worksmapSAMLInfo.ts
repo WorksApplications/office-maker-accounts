@@ -14,7 +14,7 @@ export const handler = async ( event: any ) => {
     Entity_ID: ':urn:amazon:cognito:sp:' + USER_POOL_ID,
     Start_URL: '' + REDIRECT_URL,
   }
-  return response(200, JSON.stringify(clientInfo))
+  return response(event['headers']['origin'], 200, JSON.stringify(clientInfo))
 }
 
 interface ClientInfo {

@@ -39,9 +39,9 @@ describe('tenant admin should do what he could do', function () {
 
   before(async () => {
     try {
-      // const data = await signIn(COGNITO_POOL_ADMIN, COGNITO_CLIENT_ADMIN, username, password, newPassword)
-      // accessToken = data.getIdToken().getJwtToken()
-      // console.log(accessToken)
+      const data = await signIn(COGNITO_POOL_ADMIN, COGNITO_CLIENT_ADMIN, username, password, newPassword)
+      accessToken = data.getIdToken().getJwtToken()
+      console.log(accessToken)
       axios = Axios.create({
         baseURL: ENDPOINT,
         headers: {'Authorization': 'Bearer ' + accessToken},
@@ -78,6 +78,7 @@ describe('tenant admin should do what he could do', function () {
   it('create tenant', async () => {
     const data = await axios.post('admin/tenants?tenant=' + tenant_name_to_use)
     expect(data.status).to.be.equals(200)
+    console.log(data)
     await new Promise(resolve => setTimeout(resolve, 1000))
   })
 
@@ -98,6 +99,7 @@ describe('tenant admin should do what he could do', function () {
       console.log(e.response.data)
       throw e
     }
+    console.log(data)
     expect(data.status, 'status matches').to.be.equals(200)
     expect(data.data, 'data matches nothing').to.be.deep.equals(['example'])
 

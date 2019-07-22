@@ -26,35 +26,35 @@ export async function handler( event: any ) {
   const ip: string = event['requestContext']['identity']['sourceIp']
 
   if ( typeof tenantName === 'undefined' ) {
-    return response(400, 'tenantName did not provided')
+    return response(event['headers']['origin'], 400, 'tenantName did not provided')
   }
 
   try {
     if ( 'saml' === method ) {
-      return await generateUrl(tenantName, state, event.headers['cookie'], ip)
+      return await generateUrl(event['headers']['origin'], tenantName, state, event.headers['cookie'], ip)
     }
     if ( 'guest' === method ) {
-      return await guestLogin(tenantName, state, event.headers['cookie'], ip)
+      return await guestLogin(event['headers']['origin'], tenantName, state, event.headers['cookie'], ip)
     }
-    return response(400, 'login method did not provided')
+    return response(event['headers']['origin'], 400, 'login method did not provided')
   } catch (e) {
     console.error(e.message || JSON.stringify(e))
-    return response(500, e)
+    return response(event['headers']['origin'], 500, e)
   }
 
 }
 
-async function guestLogin( tenantName: string, state: string | undefined, cookieStr: string | undefined, ip: string ) {
+async function guestLogin(origin: string, tenantName: string, state: string | undefined, cookieStr: string | undefined, ip: string ) {
   const opt: GetOptionsInfoStruct = await getTenantOptionsInfo(tenantName)
   if ( !opt.enableLoginFree || !opt.loginFreeIPs.includes(ip) ) {
-    return response(403, 'login free not allowed')
+    return response(origin, 403, 'login free not allowed')
   }
 
   const jwt = getToken(privateKey, 'guest', tenantName, 'guest', 1800)
-  return response(200, JSON.stringify(jwt))
+  return response(origin, 200, JSON.stringify(jwt))
 }
 
-async function generateUrl( tenantName: string, state: string | undefined, cookieStr: string | undefined, ip: string ) {
+async function generateUrl( origin: string, tenantName: string, state: string | undefined, cookieStr: string | undefined, ip: string ) {
   let sessionId = uuidv4()
   if ( typeof cookieStr !== 'undefined' ) {
     const cookies = cookie.parse(cookieStr)
@@ -79,14 +79,10 @@ async function generateUrl( tenantName: string, state: string | undefined, cooki
     '&response_type=CODE' +
     '&state=' + processedState +
     '&client_id=' + COGNITO_USER_CLIENT_ID
-  return {
-    statusCode: 302,
-    headers: {
-      'Location': url,
-      'Set-Cookie': cookie.serialize('session_id', sessionId),
-    },
-    body: '',
-  }
+  return response(origin, 302, '', {
+    'Location': url,
+    'Set-Cookie': cookie.serialize('session_id', sessionId),
+  })
 }
 
 

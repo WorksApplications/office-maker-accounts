@@ -25,7 +25,7 @@ export async function handler( event: any ) {
   try {
     body = JSON.parse(event['body'])
   } catch (e) {
-    return response(400, 'API requires \'application/json\' style body')
+    return response(event['headers']['origin'], 400, 'API requires \'application/json\' style body')
   }
 
   const defaultRedirectUrl = getTenantBaseUrl(WWW_BASE_URL, tenantName)
@@ -41,15 +41,15 @@ export async function handler( event: any ) {
   try {
     await validateOwnership(userName, tenantName)
   } catch (e) {
-    return response(409, 'user don\'t owns the tenant')
+    return response(event['headers']['origin'], 409, 'user don\'t owns the tenant')
   }
 
   try {
     await addTenantRequiredInfo(tenantName, jwtExpireTime, stateExpireTime, redirectUrl)
-    return response(200, JSON.stringify(bodyParameters))
+    return response(event['headers']['origin'], 200, JSON.stringify(bodyParameters))
   } catch (e) {
     console.log(e)
-    return response(400, 'unexpected error when saving tenant info into cognito')
+    return response(event['headers']['origin'],400, 'unexpected error when saving tenant info into cognito')
   }
 }
 

@@ -23,7 +23,7 @@ export async function handler (event: any) {
       validateOwnership(userName, tenantName)
     ])
   } catch (e) {
-    return response(400, e.message)
+    return response(event['headers']['origin'], 400, e.message)
   }
 
   let providerDetails: ProviderDetails
@@ -34,11 +34,11 @@ export async function handler (event: any) {
         'MetadataFile': metadata
       }
     } catch (e) {
-      return response(400, 'fail saving metadata')
+      return response(event['headers']['origin'], 400, 'fail saving metadata')
     }
   } else {
     if (!metadataUrl){
-      return response(400, 'one of metadata and metadataUrl must be provided')
+      return response(event['headers']['origin'], 400, 'one of metadata and metadataUrl must be provided')
     }
     providerDetails = {
       'MetadataURL': metadataUrl
@@ -56,11 +56,11 @@ export async function handler (event: any) {
     //todo: identities is currently not support.
     await createSAMLInfo(tenantName, samlProviderName)
     await createCognitoProvider(samlProviderName, providerDetails, attributeMap)
-    return response(200)
+    return response(event['headers']['origin'], 200)
   } catch (e) {
     console.log(e)
     await rollback(tenantName, samlProviderName).catch(e => {
-      return response(500, e.message)
+      return response(event['headers']['origin'], 500, e.message)
     })
   }
 
