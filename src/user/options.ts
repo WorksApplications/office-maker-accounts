@@ -10,6 +10,7 @@ export async function handler(event: any) {
     headers: {
       'Access-Control-Allow-Origin': return_origin,
       'Access-Control-Allow-Credentials': true,
+      'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Cookie'
     }
   }
 }

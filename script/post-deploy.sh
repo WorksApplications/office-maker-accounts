@@ -25,7 +25,7 @@ ENDPOINT="$(echo ${stack_output} | jq '.Stacks[0].Outputs[] | select(.OutputKey 
 
 
 cognito_admin_domain="$(yq r ../config.yaml COGNITO.ADMIN_USER_POOL_COGNITO_DOMAIN)"
-cognito_user_client_callback_url="$(yq r ../config.yaml WWW_BASE_URL)"
+cognito_user_client_callback_url="$(yq r ../config.yaml API_BASE_URL)"/saml/login/callback
 
 if [[ "$cognito_admin_domain" == null ]] || [[ "$cognito_admin_domain" == "" ]];then
 	# todo: create custom domain with credential

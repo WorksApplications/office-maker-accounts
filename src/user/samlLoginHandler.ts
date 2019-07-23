@@ -24,7 +24,7 @@ export async function handler( event: any ) {
   console.log(event)
   const code: string = event['queryStringParameters']['code']
   if ( typeof code === 'undefined' ) return response(event['headers']['origin'], 400, 'Authorization Code not found')
-  const cookieStr = event.headers['cookie']
+  const cookieStr = event.headers['Cookie']
   if ( typeof cookieStr === 'undefined' ) {
     return response(event['headers']['origin'], 400, 'Necessary cookie session_id is not found')
   }
@@ -53,8 +53,7 @@ export async function handler( event: any ) {
     if ( userId ) {
       const jwt = await samlSign(tenant, ip, userId, role, jwtExpireLength)
       return response(event['headers']['origin'], 302, '', {
-        'Location': originState,
-        'Set-Cookie': 'jwt=' + JSON.stringify({accessToken: jwt}),
+        'Location': originState + '?jwt=' + jwt,
       })
     }
   } catch (e) {

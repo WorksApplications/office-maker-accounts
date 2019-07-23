@@ -127,8 +127,9 @@ export async function queryTenantInfo( tenantName: string ) {
   console.log(JSON.stringify(data))
   if ( !data.Item ) {
     return {
-      jwtExpireTime: undefined,
-      stateExpireTime: undefined,
+      jwtExpireTime: '0',
+      stateExpireTime: '0',
+      redirectUrl: ''
     }
   }
   const jwtExpire: string = data.Item[TB_TENANT.INFO_JWT].N
@@ -158,8 +159,10 @@ export async function addTenantRequiredInfo( tenantName: string, jwtExpireTime: 
 
 export async function setTenantOptionsInfo( tenantName: string, enableLoginFree: boolean, enableLoginRestrict: boolean,
                                             loginFreeIPs: string[], loginRestrictIPs: string[], bufferTime: string ) {
-  console.log(`tenantname: ${tenantName}\nenableLoginFree: ${enableLoginFree}\nenableLoginRestrict: ${enableLoginRestrict}\n`)
-  console.log(`loginFreeIPs: ${loginFreeIPs}\nloginRestrictIPs: ${loginRestrictIPs}\nbufferTime: ${bufferTime}`)
+
+  console.log(`tenantName: ${tenantName}\n enableLoginFree: ${enableLoginFree}\n enableLoginRestrict: ${enableLoginRestrict}\n`)
+  console.log(`loginFreeIPs: ${loginFreeIPs}\n loginRestrictIPs: ${loginRestrictIPs}\n bufferTime: ${bufferTime}`)
+
   let params: any = {
     TableName: TB_TENANT.name,
     Item: {
@@ -202,11 +205,11 @@ export async function getTenantOptionsInfo( tenantName: string ): Promise<GetOpt
     }
   }
   return {
-    enableLoginFree: data.Item[TB_TENANT.LOGIN_FREE].BOOL,
-    enableLoginRestrict: data.Item[TB_TENANT.LOGIN_RESTRICT].BOOL,
-    loginFreeIPs: data.Item[TB_TENANT.LOGIN_FREE_IPS].SS,
-    loginRestrictIPs: data.Item[TB_TENANT.LOGIN_RESTRICT_IPS].SS,
-    bufferTime: data.item[TB_TENANT.LOGIN_RESTRICT_BUFFER].S,
+    enableLoginFree: data.Item[TB_TENANT.LOGIN_FREE]?data.Item[TB_TENANT.LOGIN_FREE].BOOL:false,
+    enableLoginRestrict: data.Item[TB_TENANT.LOGIN_RESTRICT]?data.Item[TB_TENANT.LOGIN_RESTRICT].BOOL:false,
+    loginFreeIPs: data.Item[TB_TENANT.LOGIN_FREE_IPS]?data.Item[TB_TENANT.LOGIN_FREE_IPS].SS:[],
+    loginRestrictIPs: data.Item[TB_TENANT.LOGIN_RESTRICT_IPS]?data.Item[TB_TENANT.LOGIN_RESTRICT_IPS].SS:[],
+    bufferTime: data.Item[TB_TENANT.LOGIN_RESTRICT_BUFFER]?data.Item[TB_TENANT.LOGIN_RESTRICT_BUFFER].S:'0',
   }
 }
 

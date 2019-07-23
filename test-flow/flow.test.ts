@@ -28,7 +28,7 @@ process.env.DB_USER_PRI_NAME = process.env.DB_USER_PRI_NAME ? process.env.DB_USE
 let newPassword = 'TestTest123-'
 let metadata = fs.readFileSync(path.resolve(__dirname, './idp-metadata.xml'), 'utf8')
 
-let accessToken = 'eyJraWQiOiJaZGprTzBpMDBMeVZcL0hjdHVhV2xjKzQyQ1dqUjlYaXEzc0ZnalFTbDhRTT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyOTBmY2M5YS04ZmQ1LTQ4MDgtYjZjNS01YzJmNDY5OGU1MGMiLCJhdWQiOiIybms0bWI1MTV0a3RtMGZoNXExbGhhbDJnNiIsImV2ZW50X2lkIjoiYmEzNDRhNTktMThkOC00NThlLWE1ZjgtYTNjYjc0ZTgzZWRlIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE1NjM0MzgzOTEsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMS5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMV9oNElDdmdrNUgiLCJjb2duaXRvOnVzZXJuYW1lIjoiMjkwZmNjOWEtOGZkNS00ODA4LWI2YzUtNWMyZjQ2OThlNTBjIiwiZXhwIjoxNTYzNDQxOTkxLCJpYXQiOjE1NjM0MzgzOTEsImVtYWlsIjoidGVzdF9hZG1pbkBleGFtcGxlLmNvbSJ9.0k22eUbE4PwNva1p-IdcgrSjJacupYev2fkOjgXVnP6q1krVmwI6p7_XKi6Iw91W0WQl88Sb_ZSlndzZeciHM3X-cjSF4SbS8wklSsiZLIUeqy_xD_yUhBxPfKKOOWYENtNvbGPGTuwTkzYihMfAVgfqPCpQdUF0-Htk7MEaDeFVbdQT4NjvLOs975QPUsXFiwdcDmWiGFmGIKdaEUAQ25S5tFVXSJjl2DKKPYS0rJH-Ieh7_Kaz_DLLhFs8uS3C3DIGs6x_oFCR6kQBo7wHUBe89EexxZ8mDSu_dtkgZcG9cBvvv-isZpPsSOqg0ADvX8scBfGoXJ710awmELLq2w'
+let accessToken = 'eyJraWQiOiJaZGprTzBpMDBMeVZcL0hjdHVhV2xjKzQyQ1dqUjlYaXEzc0ZnalFTbDhRTT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyOTBmY2M5YS04ZmQ1LTQ4MDgtYjZjNS01YzJmNDY5OGU1MGMiLCJhdWQiOiIybms0bWI1MTV0a3RtMGZoNXExbGhhbDJnNiIsImV2ZW50X2lkIjoiMmMwYzRjZDItODIzNC00Zjg2LWJkMjgtMDliODNkNTIwZmJhIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE1NjM3OTcyMTgsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1ub3J0aGVhc3QtMS5hbWF6b25hd3MuY29tXC9hcC1ub3J0aGVhc3QtMV9oNElDdmdrNUgiLCJjb2duaXRvOnVzZXJuYW1lIjoiMjkwZmNjOWEtOGZkNS00ODA4LWI2YzUtNWMyZjQ2OThlNTBjIiwiZXhwIjoxNTYzODAwODE4LCJpYXQiOjE1NjM3OTcyMTgsImVtYWlsIjoidGVzdF9hZG1pbkBleGFtcGxlLmNvbSJ9.POHSp1oeDWX8nkZwjV7hmA8s0zhPFwBzDYOAAocPR_jcda9Un6fO1SAVaJjtxLWV3dq0Mk8BBDKfgdMzDyBihYNWjZGQn0N3IrCqwqhAP9Do7a5nKoryLBOrX8Ke9t0tQy421dtTQZHtP-eSIWcn-VW0fJfxf3ivhwVCfMvh0WYB4Gk2OHjOhyTu9xeyYPFW_xdV3nDLai-CHwjT2D64SjmE4rTTgzL3w9NYwvzsakhtVCnyZJHzFzW6NnoAaDSEfL4P6bHs1da4gldVvkgyw6RFnVJF9BlJuynGZvy34WKHeFWL06F0UuxK-i0P1lFC47koudVcb4wllr7b76M5lA'
 let authSuccess = false
 
 let axios: AxiosInstance
@@ -39,9 +39,9 @@ describe('tenant admin should do what he could do', function () {
 
   before(async () => {
     try {
-      const data = await signIn(COGNITO_POOL_ADMIN, COGNITO_CLIENT_ADMIN, username, password, newPassword)
-      accessToken = data.getIdToken().getJwtToken()
-      console.log(accessToken)
+      // const data = await signIn(COGNITO_POOL_ADMIN, COGNITO_CLIENT_ADMIN, username, password, newPassword)
+      // accessToken = data.getIdToken().getJwtToken()
+      // console.log(accessToken)
       axios = Axios.create({
         baseURL: ENDPOINT,
         headers: {'Authorization': 'Bearer ' + accessToken},
@@ -53,7 +53,7 @@ describe('tenant admin should do what he could do', function () {
     }
   })
 
-  const tenant_name_to_use = 'example'
+  const tenant_name_to_use = 'beta'
   it('get tenant', async () => {
     let data
     try {
@@ -78,7 +78,6 @@ describe('tenant admin should do what he could do', function () {
   it('create tenant', async () => {
     const data = await axios.post('admin/tenants?tenant=' + tenant_name_to_use)
     expect(data.status).to.be.equals(200)
-    console.log(data)
     await new Promise(resolve => setTimeout(resolve, 1000))
   })
 

@@ -2,6 +2,7 @@
 
 const AWS = require('aws-sdk')
 const cognitoUserPool = new AWS.CognitoIdentityServiceProvider({apiVersion: '2016-04-18'})
+import {UpdateUserPoolClientRequest, UserPoolClientType} from 'aws-sdk/clients/cognitoidentityserviceprovider'
 import {ADMIN_POOL} from './cognitoPoolSchema'
 
 interface UserAttributeStruct {
@@ -93,18 +94,29 @@ export async function createCognitoProvider( samlProviderName: string, providerD
     ClientId: process.env.USER_CLIENT_ID,
     UserPoolId: process.env.USER_POOL_ID,
   }).promise()
-  let providerList: string[] = []
-  if ( data.UserPoolClient.SupportedIdentityProviders ) {
-    providerList = data.UserPoolClient.SupportedIdentityProviders
-  }
-  providerList.push(samlProviderName)
 
-  await cognitoUserPool.updateUserPoolClient({
-    ClientId: process.env.USER_CLIENT_ID,
-    UserPoolId: process.env.USER_POOL_ID,
-    SupportedIdentityProviders: providerList,
-  }).promise()
+  const param = copyUserPoolClientParameterWithAdditionalProvider(data.UserPoolClient, samlProviderName)
+
+  await cognitoUserPool.updateUserPoolClient(param).promise()
   return
+}
+
+function copyUserPoolClientParameterWithAdditionalProvider( userPoolClient: UserPoolClientType, extraProvider: string ) {
+  // ugly
+  const keys: Array<keyof UserPoolClientType> = ['UserPoolId', 'ClientId', 'ClientName', 'RefreshTokenValidity', 'ReadAttributes', 'WriteAttributes',
+                'ExplicitAuthFlows', 'SupportedIdentityProviders', 'CallbackURLs', 'LogoutURLs', 'DefaultRedirectURI',
+                'AllowedOAuthFlows', 'AllowedOAuthScopes', 'AllowedOAuthFlowsUserPoolClient', 'AnalyticsConfiguration']
+
+  let params: any = {}
+  params.SupportedIdentityProviders = []
+  keys.forEach((key: keyof UserPoolClientType)=>{
+    if(userPoolClient[key]){
+      params[key] = userPoolClient[key]
+    }
+  })
+
+  params.SupportedIdentityProviders.push(extraProvider)
+  return params
 }
 
 export async function deleteCognitoProvider( samlProviderName: string ) {

@@ -31,10 +31,10 @@ export async function handler( event: any ) {
 
   try {
     if ( 'saml' === method ) {
-      return await generateUrl(event['headers']['origin'], tenantName, state, event.headers['cookie'], ip)
+      return await generateUrl(event['headers']['origin'], tenantName, state, event.headers['Cookie'], ip)
     }
     if ( 'guest' === method ) {
-      return await guestLogin(event['headers']['origin'], tenantName, state, event.headers['cookie'], ip)
+      return await guestLogin(event['headers']['origin'], tenantName, state, event.headers['Cookie'], ip)
     }
     return response(event['headers']['origin'], 400, 'login method did not provided')
   } catch (e) {
