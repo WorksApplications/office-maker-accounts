@@ -31,6 +31,6 @@ export async function handler( event: any ) {
     }
     return response(event['headers']['origin'], 200, body)
   } catch (e) {
-    return response(event['headers']['origin'], 500, e.message || JSON.stringify(e))
+    return response(event['headers']['origin'], 200, {})
   }
 }
