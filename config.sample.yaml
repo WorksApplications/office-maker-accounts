@@ -8,3 +8,8 @@ WWW_BASE_URL: '' # base url for www site
 SSM:
   PUBLIC_KEY: ${ssm:key_name_to_use~true}
   PRIVATE_KEY: ${ssm:key_name_to_use~true}
+
+SYSTEM:
+  userId: 'system'
+  role: 'system'
+  expireIn: 60

@@ -2,7 +2,7 @@ import {getTenantOptionsInfo, queryTenantInfo} from '@/db/dynamoAdminOperations'
 import {GetOptionsInfoStruct} from '@/db/dynamoSchema'
 import {getRedirectUrl} from '@/generateUrl'
 import response from '@/lambdaResponse'
-import {getToken} from './worksmapJWT'
+import {getToken} from 'src/worksmapJWT'
 
 const uuidv4 = require('uuid/v4') //random
 const jwt = require('jsonwebtoken')
@@ -36,6 +36,9 @@ export async function handler( event: any ) {
     if ( 'guest' === method ) {
       return await guestLogin(event['headers']['origin'], tenantName, state, event.headers['Cookie'], ip)
     }
+    // if ( 'test' === method ) {
+    //   return await testLogin(event['headers']['origin'], tenantName, state, event.headers['Cookie'], ip)
+    // }
     return response(event['headers']['origin'], 400, 'login method did not provided')
   } catch (e) {
     console.error(e.message || JSON.stringify(e))
@@ -54,6 +57,45 @@ async function guestLogin(origin: string, tenantName: string, state: string | un
   return response(origin, 200, JSON.stringify(jwt))
 }
 
+// async function testLogin(origin: string, tenantName: string, state: string | undefined, cookieStr: string | undefined, ip: string ) {
+//   let sessionId = uuidv4()
+//   if ( typeof cookieStr !== 'undefined' ) {
+//     const cookies = cookie.parse(cookieStr)
+//     if ( typeof cookies['session_id'] === 'undefined' || cookies['session_id'] === '' ) {
+//       sessionId = cookies['session_id']
+//     }
+//   }
+//
+//   const info = await queryTenantInfo(tenantName)
+//   const jwtExpireLength = info.jwtExpireTime ? parseInt(info.jwtExpireTime) : defaultJwtExpireLength
+//   const stateExpireLength = info.stateExpireTime ? parseInt(info.stateExpireTime) : defaultStateExpireLength
+//   const defaultRedirectUrl = info.redirectUrl ? info.redirectUrl : ''
+//   if ( typeof state === 'undefined' ) state = defaultRedirectUrl
+//
+//   const processedState = createState(sessionId, state, stateExpireLength, jwtExpireLength, tenantName, ip)
+//   // const REDIRECT_URL = getRedirectUrl(BASE_URL)
+//   const REDIRECT_URL = 'http://localhost:8081/user/callback'
+//   const url =
+//     'https://' + COGNITO_DOMAIN + '.auth.' + COGNITO_REGION + '.amazoncognito.com' +
+//     '/client' +
+//     '?client_id=' + COGNITO_USER_CLIENT_ID +
+//     '&redirect_uri=' + REDIRECT_URL +
+//     '&response_type=CODE' +
+//     '&state=' + processedState +
+//     '&scope=profile email phone openid aws.cognito.signin.user.admin'
+//
+//
+//
+//
+//   return response(origin, 302, '', {
+//     'Location': url,
+//     'Set-Cookie': cookie.serialize('session_id', sessionId),
+//   })
+
+//   const jwt = getToken(privateKey, 'guest', tenantName, 'guest', 1800)
+//   return response(origin, 200, JSON.stringify(jwt))
+// }
+
 async function generateUrl( origin: string, tenantName: string, state: string | undefined, cookieStr: string | undefined, ip: string ) {
   let sessionId = uuidv4()
   if ( typeof cookieStr !== 'undefined' ) {
@@ -71,6 +113,7 @@ async function generateUrl( origin: string, tenantName: string, state: string | 
 
   const processedState = createState(sessionId, state, stateExpireLength, jwtExpireLength, tenantName, ip)
   const REDIRECT_URL = getRedirectUrl(BASE_URL)
+  // const REDIRECT_URL = 'http://localhost:8081/user/callback'
   const url =
     'https://' + COGNITO_DOMAIN + '.auth.' + COGNITO_REGION + '.amazoncognito.com' +
     '/oauth2/authorize' +

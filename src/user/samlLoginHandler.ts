@@ -3,7 +3,7 @@ import {getTenantOptionsInfo} from '@/db/dynamoAdminOperations'
 import {GetOptionsInfoStruct} from '@/db/dynamoSchema'
 import {getRedirectUrl} from '@/generateUrl'
 import response from '@/lambdaResponse'
-import {getToken} from '@/user/worksmapJWT'
+import {getToken} from '@/worksmapJWT'
 import axios from 'axios'
 
 const jwt = require('jsonwebtoken')

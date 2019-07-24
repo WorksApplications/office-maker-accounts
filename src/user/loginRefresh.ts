@@ -1,6 +1,6 @@
 import response from '@/lambdaResponse'
 import {samlSign} from '@/user/samlLoginHandler'
-import {getToken} from '@/user/worksmapJWT'
+import {getToken} from '@/worksmapJWT'
 
 const jwt = require('jsonwebtoken')
 const privateKey = process.env.privateKey as string

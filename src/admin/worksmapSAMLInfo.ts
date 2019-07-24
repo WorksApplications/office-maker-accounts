@@ -11,7 +11,7 @@ export const handler = async ( event: any ) => {
   let REDIRECT_URL = getRedirectUrl(BASE_URL)
   const clientInfo: ClientInfo = {
     ACS_URL: 'https://' + COGNITO_DOMAIN + '.auth.' + COGNITO_REGION + '.amazoncognito.com/saml2/idpresponse',
-    Entity_ID: ':urn:amazon:cognito:sp:' + USER_POOL_ID,
+    Entity_ID: 'urn:amazon:cognito:sp:' + USER_POOL_ID,
     Start_URL: '' + REDIRECT_URL,
   }
   return response(event['headers']['origin'], 200, JSON.stringify(clientInfo))

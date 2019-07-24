@@ -52,6 +52,7 @@ custom:
     includeModules: true
   publicKey: ${file(./config.yaml):SSM.PUBLIC_KEY}
   privateKey: ${file(./config.yaml):SSM.PRIVATE_KEY}
+  systemJWTFunctionName: ${self:service}-${self:provider:stage}-systemJWT
 
 package:
   individually: true
@@ -63,7 +64,7 @@ functions:
     handler: src/admin/registerTenant.handler
     name: ${self:service}-${self:provider.stage}-createTenant
     role: !GetAtt AllPermissionRole.Arn
-    events: # POST tenants/tenant=<tenant>
+    events: # POST tenants?tenant=<tenant>
       - http:
           path: admin/tenants
           method: post
@@ -288,6 +289,16 @@ functions:
       COGNITO_REGION: ${self:provider.region}
       COGNITO_USER_CLIENT_ID: !Ref CognitoUserPoolClientForUser
 
+  systemJwt:
+    warmup: prod
+    handler: src/system/systemJWT.handler
+    name: ${self:custom.systemJWTFunctionName}
+    role: !GetAtt AllPermissionRole.Arn
+    environment:
+      privateKey: ${self:custom.privateKey}
+      systemUserId: ${file(config.yaml):SYSTEM.userId}
+      role: ${file(config.yaml):SYSTEM.role}
+      systemExpire: ${file(config.yaml):SYSTEM.expireIn}
 resources:
   Resources: ${file(cloudformation/cf_for_serverless.yaml):Resources}
   Outputs: ${file(cloudformation/cf_for_serverless.yaml):Outputs}
