@@ -50,8 +50,9 @@ export async function handler (event: any) {
   /**
    * - add to dynamo record
    * - link to cognito admin pool
+   * except tenant already exists error,
+   * rollback if something went run
    */
-
   try{
     //todo: identities is currently not support.
     await createSAMLInfo(tenantName, samlProviderName)
@@ -59,9 +60,13 @@ export async function handler (event: any) {
     return response(event['headers']['origin'], 200)
   } catch (e) {
     console.log(e)
-    await rollback(tenantName, samlProviderName).catch(e => {
-      return response(event['headers']['origin'], 500, e.message)
-    })
+    if (!e.message.includes('already exists')){
+      await rollback(tenantName, samlProviderName).catch(e => {
+        return response(event['headers']['origin'], 500, e.message)
+      })
+    }
+
+    return response(event['headers']['origin'], 400, e.message)
   }
 
 }
